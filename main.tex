@@ -27,12 +27,12 @@ $^{\text{\sf 2}}$ Big Data Institute, Li Ka Shing Centre for Health Information 
 \editor{Associate Editor: XXXXXXX}
 
 \abstract{\textbf{Motivation:}
-One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection).
-As a state-of-the-art method, the program {\tt DEploid} takes sequence data and estimates the number of different parasite strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program and output provides a unique opportunity for researchers to study the epidemiology of malaria parasites. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites.
+%One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection).
+As a state-of-the-art method, the program {\tt DEploid} takes sequence data of mixed genome and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
 \\
 \textbf{Results:}
 To improve the scalability issue with the number of reference strains, we have developed an upgraded version --- {\tt DEploid-LASSO} to shrink and optimise the reference panel.
-Combining the new reference panel feature with the previous enhanced {\tt DEploid} (for inbred samples), we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
+Combining the new reference panel feature with the previous enhanced version for better handling inbred samples, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
 \\
 \textbf{Availability:} The open source implementation DEploid-BEST is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
 \textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com}\\
@@ -43,14 +43,33 @@ online.}
 
 \section{Introduction}
 
+Malaria is one of the top global health issues.
+One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection). The presence of multiple infecting strains of the malarial parasite {\it Plasmodium falciparum} affects key phenotypic traits, including drug resistance and risk of severe disease. Advances in protocols and sequencing technology have made it possible to obtain high-coverage genome-wide sequencing data from blood samples and blood spots taken in the field. However, analyzing and interpreting such data is challenging because of the high rate of multiple infections present. {\it DEploid}~\citep{Zhu2017} is designed to meet this need to deconvolve mixed {\it Plasmodium falciparum} genomes. With different parameter settings, {\it DEploid} can also be used for other mixed pathogen deconvolution \citep{auburn2019a, Mustonen2018}.
 
 
-%The presence of multiple infecting strains of the malarial parasite Plasmodium falciparum affects key phenotypic traits, including drug resistance and risk of severe disease. Advances in protocols and sequencing technology have made it possible to obtain high-coverage genome-wide sequencing data from blood samples and blood spots taken in the field. However, analyzing and interpreting such data is challenging because of the high rate of multiple infections present.
+In previous work \citep{Zhu2017}, we use {\it in vitro} mixed samples, to compare \texttt{DEploid} with all the methods mentioned above
 
+%A mixed infection can be completely described by the number of co-existing strains, their relative proportions, and their associated haplotypes. Existing methods for characterizing mixed infections are limited to providing a summary statistic of relative inbreeding (F$_{\textrm{ws}}$, \cite{Manske2012}),
 
+inferring the number of strains (\texttt{COIL}), or simultaneously inferring the number of strains and their proportions (\texttt{pfmix}, \cite{Jack2016}). DEploid is the only method that can also estimate haplotypes although it can be argued that conventional tools for phasing diploid organisms (\texttt{BEAGLE}, \texttt{SHAPEIT}) could be used to deconvolute mixtures of two strains.
 
+\textcolor{black}{In this section, we use the same dataset (27 samples)
 
+to compare \texttt{DEploid} with all the methods mentioned above (see Supplementary Material for details).
 
+Our method correctly infers the number of strains in 24 out of 27 samples when a reference panel is provided. In comparison, \texttt{COIL} correctly infers the number of strains in 23 samples.
+We notice that both methods struggle to identify strains whose relative proportions is below 5\% (Figure~\ref{fig:switchVsMisCopy}(a)). Specifically, both methods fail to detect the minor strain at 1\% in sample PG0414-C.
+
+However, while \texttt{COIL} typically fails to identify strains with a proportion below 5\%,  \texttt{DEploid} tends to over-fit the minor strain with an additional component.}
+
+\textcolor{black}{The method \texttt{pfmix} infers the number of strains and proportions solely from the allele frequency imbalance within sample: It infers the strain proportions assuming different number of strains (from one to eight), then uses the Bayesian information criterion to choose the best model. As we were unsuccessful in our attempt to use {\tt pfmix} with our dataset,, we ignore the model selection step of \texttt{pfmix}, and infer proportions directly with fixed number of strains. Similar to the comparison shown in Figure~\ref{fig:jason}, we compute the observed and expected effective number of strains of each sample, and find consistent results between \texttt{DEploid} and \texttt{pfmix}..
+}
+
+We also investigated the use of \texttt{BEAGLE} and \texttt{SHAPEIT} for deconvolving haplotypes in mixtures of two strains. \textcolor{black}{\texttt{BEAGLE} and \texttt{SHAPEIT} would implicitly assume a 50:50 distribution of alleles, since they have been designed for diploid organisms.}  Both methods worked well for balanced mixtures (i.e. with proportions between 40\% and 60\%) as they mimic a diploid sample. However, as strain proportions became more unbalanced, accuracy degraded and both methods incorrectly inferred heterozygous sites as homozygous, introducing a bias towards inferring the haplotypes of dominant strains. We observed that strains with a relative proportion below 20\% were always masked out by the dominant strain (Figure~\ref{fig:switchVsMisCopy}(c)).
+
+%Mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito.
+In the latter case, parasites undergo sexual recombination within the mosquito.
+Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not.
 
 All haplotype inference methods are biased by reference panels \cite{Palmer2016}.
 An intuitive approach to reduce such bias is to increase the haplotype number of the reference panel.
@@ -59,8 +78,7 @@ In this project, I use a ``least absolute shrinkage and selection operator'' (LA
 The program uses key genotype structures to tune the output haplotypes.
 As a proof of principle, I deconvolute a set of {\it in vitro} mixtures~\cite{Wendler2015}, with a panel constituted from the genomes of 92 lab-controlled {\it P. falciprium} crosses~\cite{Miles2015}.
 
-There are several limitations of the current implementation, the greatest of which is the quadratic scaling with reference panel size. Note that a typical reference panel from field samples will not guarantee all haplotype structure representative of the population is present. Therefore, it would be ideal to include as many reference strains as possible. However, this approach is computationally prohibitive. In practice, current approaches to related problems such as haplotype phasing \citep{Delaneau2012} or inference from low-coverage sequencing experiments \citep{Davis2016} typically aim to select a few candidate haplotypes (which might be a mosaic) from a reference panel.  Alternatively, the reference panel data can itself be approximated, for example through graphical structures, as in BEAGLE \citep{Browning2007}, or represented through structures that enable efficient computation \citep{Lunter2016}. \textcolor{black}{Our current implementation also only considers biallelic variants. To reconstruct the complete haplotype, we should also consider structural variants such as insertions and deletions, which will require tailored error models.}
-Such extensions will be pursued in future work.
+%There are several limitations of the current implementation, the greatest of which is the quadratic scaling with reference panel size. Note that a typical reference panel from field samples will not guarantee all haplotype structure representative of the population is present. Therefore, it would be ideal to include as many reference strains as possible. However, this approach is computationally prohibitive. In practice, current approaches to related problems such as haplotype phasing \citep{Delaneau2012} or inference from low-coverage sequencing experiments \citep{Davis2016} typically aim to select a few candidate haplotypes (which might be a mosaic) from a reference panel.  Alternatively, the reference panel data can itself be approximated, for example through graphical structures, as in BEAGLE \citep{Browning2007}, or represented through structures that enable efficient computation \citep{Lunter2016}. \textcolor{black}{Our current implementation also only considers biallelic variants. To reconstruct the complete haplotype, we should also consider structural variants such as insertions and deletions, which will require tailored error models.}
 
 
 In comparison to the problem of phasing haplotypes within diploid organisms, deconvolving the strains of a multiple infection differs because of uncertainty in the number of strains present and their relative proportions.  Consequently, existing tools for phasing diploid organisms, such as BEAGLE \citep{Browning2007}, IMPUTE2 \citep{Howie2009} and SHAPEIT \citep{Delaneau2012, Oconnell2014}, are not appropriate. \citet{Galinsky2015}, \citet{Jack2016, Chang2017} have attempted to address the multiple infection problem by inferring the number and proportions of strains from allele frequencies within samples.  However, since they do not infer haplotypes, these approaches have limited applicability.
@@ -119,7 +137,7 @@ We thank the Pf3k consortium for valuable insights.
 \section*{Funding}
 This work was supported by the Wellcome Trust grant [100956/Z/13/Z] to G.M.\\
 
-\noindent {\it Conflict of Interest:} Majority of this work was completed by SJZ during postdoc at the BDI.
+\noindent {\it Conflict of Interest:} Software development and data analysis in this work was completed by S.J.Z. during postdoc at the BDI.
 
 
 \nocite{Zhu2017}
