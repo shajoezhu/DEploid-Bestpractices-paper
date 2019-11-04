@@ -5,6 +5,8 @@
 \access{Advance Access Publication Date: Day Month Year}
 \appnotes{Manuscript Category}
 
+\graphicspath{{figures/}}
+
 \begin{document}
 \firstpage{1}
 
@@ -53,14 +55,14 @@ In previous work \citep{Zhu2017}, we use {\it in vitro} mixed samples, to compar
 
 inferring the number of strains (\texttt{COIL}), or simultaneously inferring the number of strains and their proportions (\texttt{pfmix}, \cite{Jack2016}). DEploid is the only method that can also estimate haplotypes although it can be argued that conventional tools for phasing diploid organisms (\texttt{BEAGLE}, \texttt{SHAPEIT}) could be used to deconvolute mixtures of two strains.
 
-\textcolor{black}{In this section, we use the same dataset (27 samples)
+\textcolor{black}{In this section, we use the same dataset (27 samples)}
 
 to compare \texttt{DEploid} with all the methods mentioned above (see Supplementary Material for details).
 
 Our method correctly infers the number of strains in 24 out of 27 samples when a reference panel is provided. In comparison, \texttt{COIL} correctly infers the number of strains in 23 samples.
 We notice that both methods struggle to identify strains whose relative proportions is below 5\% (Figure~\ref{fig:switchVsMisCopy}(a)). Specifically, both methods fail to detect the minor strain at 1\% in sample PG0414-C.
 
-However, while \texttt{COIL} typically fails to identify strains with a proportion below 5\%,  \texttt{DEploid} tends to over-fit the minor strain with an additional component.}
+However, while \texttt{COIL} typically fails to identify strains with a proportion below 5\%,  \texttt{DEploid} tends to over-fit the minor strain with an additional component.
 
 \textcolor{black}{The method \texttt{pfmix} infers the number of strains and proportions solely from the allele frequency imbalance within sample: It infers the strain proportions assuming different number of strains (from one to eight), then uses the Bayesian information criterion to choose the best model. As we were unsuccessful in our attempt to use {\tt pfmix} with our dataset,, we ignore the model selection step of \texttt{pfmix}, and infer proportions directly with fixed number of strains. Similar to the comparison shown in Figure~\ref{fig:jason}, we compute the observed and expected effective number of strains of each sample, and find consistent results between \texttt{DEploid} and \texttt{pfmix}..
 }
@@ -110,6 +112,13 @@ Ideally, the program should take any given reference strains, and make choices f
 \section{Approach}
 
 
+What we have leaned so far.
+1. Reference panel not only essential for haplotyle quality, also improves the inference of k.
+2. Given the correct k, Ibd improves the proportion inference, as a result, it also improves haplotype inference
+3. It does not require whole genome to infer k. A few hundred of snp would do the job
+4. Inference of proportions may differ between chromosomes, but the mathematical expression holds
+5. K maybe different, but the expression holds
+
 
 % \begin{methods}
 % \end{methods}
@@ -118,9 +127,34 @@ Ideally, the program should take any given reference strains, and make choices f
 \section{Methods}
 \subsection{DEploid-Lasso}
 
+define variables: what is wsaf? what is haplotypes and weight
+
+list the formula
+
+General form
+Let $X$ be the reference panel, $wsaf$ is the within sample allele frequency.
+$\displaystyle \min _{\overrightarrow{\beta}}||wsaf - \beta_{0} - \overrightarrow{\beta} X|| ^{2} + \lambda ||\overrightarrow{\beta}||_{1} $
+
+dev.ratio = 1-dev/nulldev
+
+$nulldev = 2*(loglike_sat -loglike(Null))$
+
+$loglike_sat$ is the loglikelihood for the saturated model
+The NULL model refers to the intercept model,
+
+
 
 \subsection{DEploid-Best}
 
+What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
+
+This is an optimised pipeline
+
+\begin{figure}[h]
+  \includegraphics[width = .5\textwidth]{scheme.pdf}
+  \caption{}
+  \label{}
+\end{figure}
 
 \section{Discussion}
 
