@@ -30,13 +30,12 @@ $^{\text{\sf 2}}$ Big Data Institute, Li Ka Shing Centre for Health Information 
 
 \abstract{\textbf{Motivation:}
 %One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection).
-As a state-of-the-art method, the program {\tt DEploid} takes sequence data of mixed genome and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
+As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes mixed genome sequence and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
 \\
 \textbf{Results:}
-To improve the scalability issue with the number of reference strains, we have developed an upgraded version --- {\tt DEploid-LASSO} to shrink and optimise the reference panel.
-Combining the new reference panel feature with the previous enhanced version for better handling inbred samples, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
+To improve the scalability issue with the number of reference strains, the upgraded version {\tt DEploid-LASSO} can take thousands of reference strain, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
 \\
-\textbf{Availability:} The open source implementation DEploid-BEST is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
+\textbf{Availability:} The open source implementation {\tt DEploid-BEST} is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
 \textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com}\\
 \textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics}
 online.}
@@ -126,6 +125,7 @@ What we have leaned so far.
 
 \section{Methods}
 \subsection{DEploid-Lasso}
+\citep{Friedman2010}
 
 define variables: what is wsaf? what is haplotypes and weight
 
