@@ -33,7 +33,7 @@ $^{\text{\sf 2}}$ Big Data Institute, Li Ka Shing Centre for Health Information 
 As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes mixed genome sequence and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
 \\
 \textbf{Results:}
-To improve the scalability issue with the number of reference strains, the upgraded version {\tt DEploid-LASSO} can take thousands of reference strain, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
+To improve the scalability issue with the number of reference strains, we present an upgraded version --- {\tt DEploid-LASSO}, which can take thousands of reference strains, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
 \\
 \textbf{Availability:} The open source implementation {\tt DEploid-BEST} is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
 \textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com}\\
@@ -44,8 +44,10 @@ online.}
 
 \section{Introduction}
 
-Malaria is one of the top global health issues.
-One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection). The presence of multiple infecting strains of the malarial parasite {\it Plasmodium falciparum} affects key phenotypic traits, including drug resistance and risk of severe disease. Advances in protocols and sequencing technology have made it possible to obtain high-coverage genome-wide sequencing data from blood samples and blood spots taken in the field. However, analyzing and interpreting such data is challenging because of the high rate of multiple infections present. {\it DEploid}~\citep{Zhu2017} is designed to meet this need to deconvolve mixed {\it Plasmodium falciparum} genomes. With different parameter settings, {\it DEploid} can also be used for other mixed pathogen deconvolution \citep{auburn2019a, Mustonen2018}.
+Deconvolution of mixed parasite genome is critical for understanding malarias epidemiology. However, this task is remains challenging for serveral reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate.
+
+% Malaria is one of the top global health issues.
+% One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection). The presence of multiple infecting strains of the malarial parasite {\it Plasmodium falciparum} affects key phenotypic traits, including drug resistance and risk of severe disease. Advances in protocols and sequencing technology have made it possible to obtain high-coverage genome-wide sequencing data from blood samples and blood spots taken in the field. However, analyzing and interpreting such data is challenging because of the high rate of multiple infections present. {\it DEploid}~\citep{Zhu2017} is designed to meet this need to deconvolve mixed {\it Plasmodium falciparum} genomes. With different parameter settings, {\it DEploid} can also be used for other mixed pathogen deconvolution \citep{auburn2019a, Mustonen2018}.
 
 
 In previous work \citep{Zhu2017}, we use {\it in vitro} mixed samples, to compare \texttt{DEploid} with all the methods mentioned above
@@ -58,15 +60,15 @@ inferring the number of strains (\texttt{COIL}), or simultaneously inferring the
 
 to compare \texttt{DEploid} with all the methods mentioned above (see Supplementary Material for details).
 
-Our method correctly infers the number of strains in 24 out of 27 samples when a reference panel is provided. In comparison, \texttt{COIL} correctly infers the number of strains in 23 samples.
-We notice that both methods struggle to identify strains whose relative proportions is below 5\% (Figure~\ref{fig:switchVsMisCopy}(a)). Specifically, both methods fail to detect the minor strain at 1\% in sample PG0414-C.
-
-However, while \texttt{COIL} typically fails to identify strains with a proportion below 5\%,  \texttt{DEploid} tends to over-fit the minor strain with an additional component.
-
-\textcolor{black}{The method \texttt{pfmix} infers the number of strains and proportions solely from the allele frequency imbalance within sample: It infers the strain proportions assuming different number of strains (from one to eight), then uses the Bayesian information criterion to choose the best model. As we were unsuccessful in our attempt to use {\tt pfmix} with our dataset,, we ignore the model selection step of \texttt{pfmix}, and infer proportions directly with fixed number of strains. Similar to the comparison shown in Figure~\ref{fig:jason}, we compute the observed and expected effective number of strains of each sample, and find consistent results between \texttt{DEploid} and \texttt{pfmix}..
-}
-
-We also investigated the use of \texttt{BEAGLE} and \texttt{SHAPEIT} for deconvolving haplotypes in mixtures of two strains. \textcolor{black}{\texttt{BEAGLE} and \texttt{SHAPEIT} would implicitly assume a 50:50 distribution of alleles, since they have been designed for diploid organisms.}  Both methods worked well for balanced mixtures (i.e. with proportions between 40\% and 60\%) as they mimic a diploid sample. However, as strain proportions became more unbalanced, accuracy degraded and both methods incorrectly inferred heterozygous sites as homozygous, introducing a bias towards inferring the haplotypes of dominant strains. We observed that strains with a relative proportion below 20\% were always masked out by the dominant strain (Figure~\ref{fig:switchVsMisCopy}(c)).
+% Our method correctly infers the number of strains in 24 out of 27 samples when a reference panel is provided. In comparison, \texttt{COIL} correctly infers the number of strains in 23 samples.
+% We notice that both methods struggle to identify strains whose relative proportions is below 5\% (Figure~\ref{fig:switchVsMisCopy}(a)). Specifically, both methods fail to detect the minor strain at 1\% in sample PG0414-C.
+%
+% However, while \texttt{COIL} typically fails to identify strains with a proportion below 5\%,  \texttt{DEploid} tends to over-fit the minor strain with an additional component.
+%
+% \textcolor{black}{The method \texttt{pfmix} infers the number of strains and proportions solely from the allele frequency imbalance within sample: It infers the strain proportions assuming different number of strains (from one to eight), then uses the Bayesian information criterion to choose the best model. As we were unsuccessful in our attempt to use {\tt pfmix} with our dataset,, we ignore the model selection step of \texttt{pfmix}, and infer proportions directly with fixed number of strains. Similar to the comparison shown in Figure~\ref{fig:jason}, we compute the observed and expected effective number of strains of each sample, and find consistent results between \texttt{DEploid} and \texttt{pfmix}..
+% }
+%
+% We also investigated the use of \texttt{BEAGLE} and \texttt{SHAPEIT} for deconvolving haplotypes in mixtures of two strains. \textcolor{black}{\texttt{BEAGLE} and \texttt{SHAPEIT} would implicitly assume a 50:50 distribution of alleles, since they have been designed for diploid organisms.}  Both methods worked well for balanced mixtures (i.e. with proportions between 40\% and 60\%) as they mimic a diploid sample. However, as strain proportions became more unbalanced, accuracy degraded and both methods incorrectly inferred heterozygous sites as homozygous, introducing a bias towards inferring the haplotypes of dominant strains. We observed that strains with a relative proportion below 20\% were always masked out by the dominant strain (Figure~\ref{fig:switchVsMisCopy}(c)).
 
 %Mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito.
 In the latter case, parasites undergo sexual recombination within the mosquito.
@@ -108,22 +110,22 @@ malaria transmission evolves across borders.
 Ideally, the program should take any given reference strains, and make choices from haplotype signatures, rather than the geographic meta data, which contain neither the patient travel history, nor the location and time of the infection.
 
 
-\section{Approach}
-
-
 What we have leaned so far.
-1. Reference panel not only essential for haplotyle quality, also improves the inference of k.
-2. Given the correct k, Ibd improves the proportion inference, as a result, it also improves haplotype inference
-3. It does not require whole genome to infer k. A few hundred of snp would do the job
-4. Inference of proportions may differ between chromosomes, but the mathematical expression holds
-5. K maybe different, but the expression holds
-
-
-% \begin{methods}
-% \end{methods}
+\begin{enumerate}
+  \item Reference panel not only essential for haplotyle quality, also improves the inference of k.
+  \item Given the correct k, Ibd improves the proportion inference, as a result, it also improves haplotype inference
+  \item It does not require whole genome to infer k. A few hundred of snp would do the job
+  \item Inference of proportions may differ between chromosomes, but the mathematical expression holds
+  \item K maybe different, but the expression holds
+\end{enumerate}
 
 
 \section{Methods}
+In the light of previous experience, we
+
+\setcounter{subsection}{-1}
+\subsection{DEploid-IBD}
+
 \subsection{DEploid-Lasso}
 \citep{Friedman2010}
 
@@ -146,9 +148,15 @@ The NULL model refers to the intercept model,
 
 \subsection{DEploid-Best}
 
-What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
+In the first attempt, \citet{Zhu2017}'s approach executes \texttt{DEploid} once and deconvluts $k$, $p$ and $h$ at the same time. When applying to the Pf3k dataset, \citet{Zhu2019} improved the pipeline, and , an improved alternative was to seperate the proportion
 
-This is an optimised pipeline
+ number of strains and relative proportions all at the same time.
+
+'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
+
+% What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
+
+% This is an optimised pipeline
 
 \begin{figure}[h]
   \includegraphics[width = .5\textwidth]{scheme.pdf}
