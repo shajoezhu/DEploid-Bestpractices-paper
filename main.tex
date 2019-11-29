@@ -44,17 +44,21 @@ online.}
 
 \section{Introduction}
 
-Deconvolution of mixed parasite genome is critical for understanding malarias epidemiology. However, this task is remains challenging for serveral reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate.
+Deconvolution of mixed parasite genome is critical for understanding malarias epidemiology. However, this task is remains challenging for serveral reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover, mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not.
+
+Therefore, a mixed infection can be completely described by the number of co-existing strains $k$, their relative proportions $p$, within sample relatedness $r$ and their associated haplotypes $h$.
+
 
 % Malaria is one of the top global health issues.
 % One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection). The presence of multiple infecting strains of the malarial parasite {\it Plasmodium falciparum} affects key phenotypic traits, including drug resistance and risk of severe disease. Advances in protocols and sequencing technology have made it possible to obtain high-coverage genome-wide sequencing data from blood samples and blood spots taken in the field. However, analyzing and interpreting such data is challenging because of the high rate of multiple infections present. {\it DEploid}~\citep{Zhu2017} is designed to meet this need to deconvolve mixed {\it Plasmodium falciparum} genomes. With different parameter settings, {\it DEploid} can also be used for other mixed pathogen deconvolution \citep{auburn2019a, Mustonen2018}.
 
 
-In previous work \citep{Zhu2017}, we use {\it in vitro} mixed samples, to compare \texttt{DEploid} with all the methods mentioned above
+% In previous work \citep{Zhu2017}, we use {\it in vitro} mixed samples, to compare \texttt{DEploid} with all the methods mentioned above
 
-%A mixed infection can be completely described by the number of co-existing strains, their relative proportions, and their associated haplotypes. Existing methods for characterizing mixed infections are limited to providing a summary statistic of relative inbreeding (F$_{\textrm{ws}}$, \cite{Manske2012}),
 
-inferring the number of strains (\texttt{COIL}), or simultaneously inferring the number of strains and their proportions (\texttt{pfmix}, \cite{Jack2016}). DEploid is the only method that can also estimate haplotypes although it can be argued that conventional tools for phasing diploid organisms (\texttt{BEAGLE}, \texttt{SHAPEIT}) could be used to deconvolute mixtures of two strains.
+%Existing methods for characterizing mixed infections are limited to providing a summary statistic of relative inbreeding (F$_{\textrm{ws}}$, \cite{Manske2012}),
+
+% inferring the number of strains (\texttt{COIL}), or simultaneously inferring the number of strains and their proportions (\texttt{pfmix}, \cite{Jack2016}). DEploid is the only method that can also estimate haplotypes although it can be argued that conventional tools for phasing diploid organisms (\texttt{BEAGLE}, \texttt{SHAPEIT}) could be used to deconvolute mixtures of two strains.
 
 \textcolor{black}{In this section, we use the same dataset (27 samples)}
 
@@ -70,9 +74,6 @@ to compare \texttt{DEploid} with all the methods mentioned above (see Supplement
 %
 % We also investigated the use of \texttt{BEAGLE} and \texttt{SHAPEIT} for deconvolving haplotypes in mixtures of two strains. \textcolor{black}{\texttt{BEAGLE} and \texttt{SHAPEIT} would implicitly assume a 50:50 distribution of alleles, since they have been designed for diploid organisms.}  Both methods worked well for balanced mixtures (i.e. with proportions between 40\% and 60\%) as they mimic a diploid sample. However, as strain proportions became more unbalanced, accuracy degraded and both methods incorrectly inferred heterozygous sites as homozygous, introducing a bias towards inferring the haplotypes of dominant strains. We observed that strains with a relative proportion below 20\% were always masked out by the dominant strain (Figure~\ref{fig:switchVsMisCopy}(c)).
 
-%Mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito.
-In the latter case, parasites undergo sexual recombination within the mosquito.
-Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not.
 
 All haplotype inference methods are biased by reference panels \cite{Palmer2016}.
 An intuitive approach to reduce such bias is to increase the haplotype number of the reference panel.
