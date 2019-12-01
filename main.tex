@@ -17,7 +17,7 @@
 \title[Deconvolution of multiple infections]{DEploid Best practices}
 \author[Zhu \textit{et~al}.]{Sha Joe Zhu\,$^{\text{\sfb 1,\textcolor{black}{2}},*}$ and Gil McVean\,$^{\text{\textcolor{black}{2}},*}$}
 \address{
-$^{\text{\sf 1}}$ Sensyne Health\\
+$^{\text{\sf 1}}$ Sensyne Health plc, Oxford, UK\\
 $^{\text{\sf 2}}$ Big Data Institute, Li Ka Shing Centre for Health Information and Discovery, University of Oxford, Oxford, UK\\
 }
 
@@ -36,7 +36,7 @@ As a state-of-the-art method for malaria parasite genome deconvolution, the prog
 To improve the scalability issue with the number of reference strains, we present an upgraded version --- {\tt DEploid-LASSO}, which can take thousands of reference strains, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
 \\
 \textbf{Availability:} The open source implementation {\tt DEploid-BEST} is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
-\textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com}\\
+\textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com} \href{gil.mcvean@bdi.ox.ac.uk}{gil.mcvean@bdi.ox.ac.uk}\\
 \textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics}
 online.}
 
@@ -46,7 +46,24 @@ online.}
 
 Deconvolution of mixed parasite genome is critical for understanding malarias epidemiology. However, this task is remains challenging for serveral reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover, mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not.
 
-Therefore, a mixed infection can be completely described by the number of co-existing strains $k$, their relative proportions $p$, within sample relatedness $r$ and their associated haplotypes $h$.
+To formalize our problem, a mixed infection can be completely described by the number of co-existing strains $k$, their relative proportions $p$, within sample relatedness $r$ and their associated haplotypes $h$. All four variables describe different biological scenarios and can be studied jointly \citep{Galinsky2015,Jack2016,Henden2016} or independently \citep{Chang2017}. To our knowledge, {\texttt DEploid} \citep{Zhu2017,Zhu2019} is the only software package that can examine all four parameters under the same framework. {\tt DEploid} uses imbalanced allele frequencies to infer the number of strains and their relative proportions. The program conditions on haplotype structures within a reference panel as prior information to inferring strain sequences and estimates genome-wide in-sample relatedness. These outputs will allow researchers to study mixed malaria infections with an unprecedented level of detail \citep{Zhu2019,auburn2019a}.
+
+Both \citet{Zhu2017,Zhu2019} have conducted series of simulation studies and validations on both {\it in vitro} and {\it in silico} mixed genomes to mimic real-world epidemiological scenario. We have learned some general lessons in mixed infection deconcolution:
+\begin{enumerate}
+  \item A reference panel is ideally to be as diverse as possible to capture the key genomic backbones of the mixed genomes. An appropriate reference panel is essential for ensuring high haplotyle qualities.
+  \item In the case of balanced mixings, a good reference panel can help to pull strains apart, a less-appropriate reference panel may lead to underestimate $k$.
+  \item Several hunderds of high quality single nucleotide polymorphism sites (SNPs) are sufficient to learn $k$ and $p$ instead of the whole genome.
+  \item In the case of inbred samples,
+  \item In theory, the order of inferring mixed infection parameters $k$, $p$, $r$ and $h$ should be irrelavent. However, in practice, we find some orders are better than the others:
+  \begin{enumerate}
+    \item It is easier to infer haplotypes $h$ once all the other parameters $k$, $p$, $r$ are fixed.
+    \item Given the correct $k$, Ibd improves the proportion inference, as a result, it also improves haplotype inference
+    \item Inference of proportions may differ between chromosomes, but the mathematical expression holds
+    \item K maybe different, but the expression holds
+  \end{enumerate}
+\end{enumerate}
+
+
 
 
 % Malaria is one of the top global health issues.
@@ -58,11 +75,8 @@ Therefore, a mixed infection can be completely described by the number of co-exi
 
 %Existing methods for characterizing mixed infections are limited to providing a summary statistic of relative inbreeding (F$_{\textrm{ws}}$, \cite{Manske2012}),
 
-% inferring the number of strains (\texttt{COIL}), or simultaneously inferring the number of strains and their proportions (\texttt{pfmix}, \cite{Jack2016}). DEploid is the only method that can also estimate haplotypes although it can be argued that conventional tools for phasing diploid organisms (\texttt{BEAGLE}, \texttt{SHAPEIT}) could be used to deconvolute mixtures of two strains.
+% inferring the number of strains (\texttt{COIL}), or simultaneously inferring the number of strains and their proportions (\texttt{pfmix}, ). DEploid is the only method that can also estimate haplotypes although it can be argued that conventional tools for phasing diploid organisms (\texttt{BEAGLE}, \texttt{SHAPEIT}) could be used to deconvolute mixtures of two strains.
 
-\textcolor{black}{In this section, we use the same dataset (27 samples)}
-
-to compare \texttt{DEploid} with all the methods mentioned above (see Supplementary Material for details).
 
 % Our method correctly infers the number of strains in 24 out of 27 samples when a reference panel is provided. In comparison, \texttt{COIL} correctly infers the number of strains in 23 samples.
 % We notice that both methods struggle to identify strains whose relative proportions is below 5\% (Figure~\ref{fig:switchVsMisCopy}(a)). Specifically, both methods fail to detect the minor strain at 1\% in sample PG0414-C.
@@ -75,6 +89,21 @@ to compare \texttt{DEploid} with all the methods mentioned above (see Supplement
 % We also investigated the use of \texttt{BEAGLE} and \texttt{SHAPEIT} for deconvolving haplotypes in mixtures of two strains. \textcolor{black}{\texttt{BEAGLE} and \texttt{SHAPEIT} would implicitly assume a 50:50 distribution of alleles, since they have been designed for diploid organisms.}  Both methods worked well for balanced mixtures (i.e. with proportions between 40\% and 60\%) as they mimic a diploid sample. However, as strain proportions became more unbalanced, accuracy degraded and both methods incorrectly inferred heterozygous sites as homozygous, introducing a bias towards inferring the haplotypes of dominant strains. We observed that strains with a relative proportion below 20\% were always masked out by the dominant strain (Figure~\ref{fig:switchVsMisCopy}(c)).
 
 
+
+%There are several limitations of the current implementation, the greatest of which is the quadratic scaling with reference panel size. Note that a typical reference panel from field samples will not guarantee all haplotype structure representative of the population is present. Therefore, it would be ideal to include as many reference strains as possible. However, this approach is computationally prohibitive. In practice, current approaches to related problems such as haplotype phasing \citep{Delaneau2012} or inference from low-coverage sequencing experiments \citep{Davis2016} typically aim to select a few candidate haplotypes (which might be a mosaic) from a reference panel.  Alternatively, the reference panel data can itself be approximated, for example through graphical structures, as in BEAGLE \citep{Browning2007}, or represented through structures that enable efficient computation \citep{Lunter2016}. \textcolor{black}{Our current implementation also only considers biallelic variants. To reconstruct the complete haplotype, we should also consider structural variants such as insertions and deletions, which will require tailored error models.}
+
+
+% In comparison to the problem of phasing haplotypes within diploid organisms, deconvolving the strains of a multiple infection differs because of uncertainty in the number of strains present and their relative proportions.  Consequently, existing tools for phasing diploid organisms, such as BEAGLE \citep{Browning2007}, IMPUTE2 \citep{Howie2009} and SHAPEIT \citep{Delaneau2012, Oconnell2014}, are not appropriate.have attempted to address the multiple infection problem by inferring the number and proportions of strains from allele frequencies within samples.  However, since they do not infer haplotypes, these approaches have limited applicability.
+%
+
+
+% In practice, we reduce the number of polymorphic sites by dividing field samples into geographical regions with distinct malarial epidemiology, which urges us to explore how
+% malaria transmission evolves across borders.
+% Ideally, the program should take any given reference strains, and make choices from haplotype signatures, rather than the geographic meta data, which contain neither the patient travel history, nor the location and time of the infection.
+
+
+
+
 All haplotype inference methods are biased by reference panels \cite{Palmer2016}.
 An intuitive approach to reduce such bias is to increase the haplotype number of the reference panel.
 Ultimately, using a global reference panel will enable us to obtain high-quality haplotypes and investigate gene flows in great detail.
@@ -82,43 +111,6 @@ In this project, I use a ``least absolute shrinkage and selection operator'' (LA
 The program uses key genotype structures to tune the output haplotypes.
 As a proof of principle, I deconvolute a set of {\it in vitro} mixtures~\cite{Wendler2015}, with a panel constituted from the genomes of 92 lab-controlled {\it P. falciprium} crosses~\cite{Miles2015}.
 
-%There are several limitations of the current implementation, the greatest of which is the quadratic scaling with reference panel size. Note that a typical reference panel from field samples will not guarantee all haplotype structure representative of the population is present. Therefore, it would be ideal to include as many reference strains as possible. However, this approach is computationally prohibitive. In practice, current approaches to related problems such as haplotype phasing \citep{Delaneau2012} or inference from low-coverage sequencing experiments \citep{Davis2016} typically aim to select a few candidate haplotypes (which might be a mosaic) from a reference panel.  Alternatively, the reference panel data can itself be approximated, for example through graphical structures, as in BEAGLE \citep{Browning2007}, or represented through structures that enable efficient computation \citep{Lunter2016}. \textcolor{black}{Our current implementation also only considers biallelic variants. To reconstruct the complete haplotype, we should also consider structural variants such as insertions and deletions, which will require tailored error models.}
-
-
-In comparison to the problem of phasing haplotypes within diploid organisms, deconvolving the strains of a multiple infection differs because of uncertainty in the number of strains present and their relative proportions.  Consequently, existing tools for phasing diploid organisms, such as BEAGLE \citep{Browning2007}, IMPUTE2 \citep{Howie2009} and SHAPEIT \citep{Delaneau2012, Oconnell2014}, are not appropriate. \citet{Galinsky2015}, \citet{Jack2016, Chang2017} have attempted to address the multiple infection problem by inferring the number and proportions of strains from allele frequencies within samples.  However, since they do not infer haplotypes, these approaches have limited applicability.
-
- uses imbalanced allele frequencies to infer the number of strains and their relative proportions.
-The program conditions on haplotype structures within a reference panel as prior information to inferring strain sequences and estimates genome-wide in-sample relatedness. % from an identity by descent method.
-These outputs will allow researchers to study mixed malaria infections with an unprecedented level of detail.
-
-
-One of the critical challenges we face in understanding malarias epidemiology is that patients are often infected by more than one parasite strain (a.k.a mixed infection).
-Mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito.
-In the latter case, parasites undergo sexual recombination within the mosquito.
-Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not.
-
-Before genetic analysis can begin, the raw sequence data must be aligned to a reference genome.
-Even though the {\it Plasmodium} sequence is haploid, we often observe heterozygous sites in practice for two reasons: sequencing errors or mixed infection.
-The former can be recalibrated via statistical methods,
-while the latter requires sophisticated methods to deconvolute.
-Existing tools such as {\em Beagle}~\cite{Browning2007} and {\em IMPUTE2}~\cite{Howie2009} are not designed to cope with unknown mixtures in isolates.
-My program {\it DEploid}~\cite{Zhu2017} is designed to meet this need, which I plan to build upon through the fellowship.
-
-
-
-In practice, we reduce the number of polymorphic sites by dividing field samples into geographical regions with distinct malarial epidemiology, which urges us to explore how
-malaria transmission evolves across borders.
-Ideally, the program should take any given reference strains, and make choices from haplotype signatures, rather than the geographic meta data, which contain neither the patient travel history, nor the location and time of the infection.
-
-
-What we have leaned so far.
-\begin{enumerate}
-  \item Reference panel not only essential for haplotyle quality, also improves the inference of k.
-  \item Given the correct k, Ibd improves the proportion inference, as a result, it also improves haplotype inference
-  \item It does not require whole genome to infer k. A few hundred of snp would do the job
-  \item Inference of proportions may differ between chromosomes, but the mathematical expression holds
-  \item K maybe different, but the expression holds
-\end{enumerate}
 
 
 \section{Methods}
