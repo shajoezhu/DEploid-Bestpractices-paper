@@ -52,11 +52,13 @@ To formalize our problem, a mixed infection can be completely described by the n
 \begin{enumerate}
   \item A reference panel is ideally to be as diverse as possible to capture the key genomic backbones of the mixed parasites. An appropriate reference panel is essential for ensuring high haplotyle qualities.
   \item In the case of balanced mixings, a good reference panel can tease mixed strains apart, a less-appropriate reference panel may lead to underestimate $K$.
-  \item Inferring number of strains and relative abundance do not require whole genome data. Several hunderds of high quality single nucleotide polymorphism sites (SNPs) are sufficient:
-    \begin{enumerate}
-      \item Inference of proportions may differ between chromosomes, but the mathematical expression holds
-      \item K maybe different, but the expression holds.
-    \end{enumerate}
+  \item Inferring number of strains and relative abundance do not require whole genome data. Several hunderds of high quality single nucleotide polymorphism sites (SNPs) are sufficient. In the extreme case, it is possible to gain quick insights from using only the longest chromosome (14) to infer $K$.
+    % \begin{enumerate}
+    %   \item $K$ maybe different, but the expression holds.% observation k_1, k_2. if k_1 <= k_2, any pair of sum of p_2 belongs to p_1
+    %   % [p_chromi], [p_chromj]
+    %   \item Inference of proportions may differ between chromosomes, but the mathematical expression holds
+    % \end{enumerate}
+
   \item In practice, we estiamte the within sample relatedness using the identity-by-descent (IBD) state $\mathcal{S}$ between the mixed strains. Let's recall the notations from \citet{Zhu2019}, and use a Bayesian approach and define the posterior probabilities of $K$, $\mathbf{w}$, $\mathbf{h}$ and $\mathcal{S}$ as the following:
   \begin{equation*}
   P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}| e, D) \propto L(K, \mathbf{w}, \mathbf{h}, \mathcal{S} | e, D) \times P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}), \label{eqn:post}
@@ -65,11 +67,8 @@ To formalize our problem, a mixed infection can be completely described by the n
   \begin{equation*}
   P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}) = P(K) \times P(\mathbf{w}|K) \times P(\mathcal{S}|K) \times P(\mathbf{h}|\mathcal{S}).
   \end{equation*}
-  In practice, \texttt{DEploid} uses Markov chain Monte Carlo (MCMC) approaches. Certain executation orders perform better than the others:
-
-
-
-
+  % In practice, \texttt{DEploid} uses Markov chain Monte Carlo (MCMC) approaches.
+  This allows us to be flexible with inference process orders. In practice, certain executation orders perform better than the others:
   \begin{enumerate}
     \item It is easier to infer haplotypes $h$ once all the other parameters $k$, $p$, $r$ are fixed.
     \item Given the correct $k$, IBD improves the proportion inference, as a result, it also improves haplotype inference
@@ -80,8 +79,6 @@ To formalize our problem, a mixed infection can be completely described by the n
 % We describe the mixed infection problem by considering the number of strains, $K$, the relative abundance of each strain, $\mathbf{w}$, and the allelic state of the $k$th strain at the $i$th locus, $\mathbf{h}_{k,i}$. In addition to \citet{Zhu2017}, we also infer the identity-by-descent (IBD) state $\mathcal{S}_{i}$, which describes the strain relationship with each other at site $i$. For example, for three strains, the IBD-state could be one of the five cases: (1) all strains are not IBD; (2) strains 1 and 2 are IBD; (3) strains 1 and 3 are IBD; (4) strains 2 and 3 are IBD; (5) all strains are IBD (see Table~\ref{tab:encode}). To simplify the problem, we assume independence between markers, and drop the subscript $i$ from now on. As previously, we use a Bayesian approach and define the posterior probabilities of $K$, $\mathbf{w}$, $\mathbf{h}$ and $\mathcal{S}$,  as
 
 
-% observation k_1, k_2. if k_1 <= k_2, any pair of sum of p_2 belongs to p_1
-% [p_chromi], [p_chromj]
 
 
 
@@ -123,14 +120,14 @@ To formalize our problem, a mixed infection can be completely described by the n
 
 
 
-
-All haplotype inference methods are biased by reference panels \cite{Palmer2016}.
-An intuitive approach to reduce such bias is to increase the haplotype number of the reference panel.
-Ultimately, using a global reference panel will enable us to obtain high-quality haplotypes and investigate gene flows in great detail.
-In this project, I use a ``least absolute shrinkage and selection operator'' (LASSO) approach to shrink and optimise the global reference panel.
-The program uses key genotype structures to tune the output haplotypes.
-As a proof of principle, I deconvolute a set of {\it in vitro} mixtures~\cite{Wendler2015}, with a panel constituted from the genomes of 92 lab-controlled {\it P. falciprium} crosses~\cite{Miles2015}.
-
+%
+% All haplotype inference methods are biased by reference panels \cite{Palmer2016}.
+% An intuitive approach to reduce such bias is to increase the haplotype number of the reference panel.
+% Ultimately, using a global reference panel will enable us to obtain high-quality haplotypes and investigate gene flows in great detail.
+% In this project, I use a ``least absolute shrinkage and selection operator'' (LASSO) approach to shrink and optimise the global reference panel.
+% The program uses key genotype structures to tune the output haplotypes.
+% As a proof of principle, I deconvolute a set of {\it in vitro} mixtures~\cite{Wendler2015}, with a panel constituted from the genomes of 92 lab-controlled {\it P. falciprium} crosses~\cite{Miles2015}.
+%
 
 
 \section{Methods}
