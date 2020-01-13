@@ -43,7 +43,7 @@ online.}
 
 \section{Introduction}
 
-Deconvolution of mixed parasite genome is critical for understanding malarias epidemiology. However, this task is remains challenging for serveral reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover, mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not.
+Deconvolution of mixed parasite genome is critical for understanding malarias epidemiology. However, this task remains challenging for serveral reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover, mixed infection can be classified as super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not. %In order to solve these problems, we aim to
 
 To formalize our problem, a mixed infection can be completely described by the number of co-existing strains $K$, their relative proportions $\mathbf{w}$, within sample relatedness $r$ and their associated haplotypes $\mathbf{h}$. All four variables describe different biological scenarios and can be studied jointly \citep{Galinsky2015,Jack2016,Henden2016} or independently \citep{Chang2017}. To our knowledge, {\tt DEploid} \citep{Zhu2017,Zhu2019} is the only software package that can examine all four parameters under the same framework. {\tt DEploid} uses imbalanced allele frequencies to infer the number of strains and their relative proportions. The program conditions on haplotype structures within a reference panel as prior information to inferring strain sequences and estimates genome-wide in-sample relatedness by identity-by-descent (IBD) state $\mathcal{S}$ between mixed strains. These outputs will allow researchers to study mixed malaria infections with an unprecedented level of detail \citep{Zhu2019,auburn2019a}.
 
@@ -61,9 +61,9 @@ To formalize our problem, a mixed infection can be completely described by the n
   % In practice, \texttt{DEploid} uses Markov chain Monte Carlo (MCMC) approaches.
   This allows us to be flexible with inference process orders. In practice, we use Markov chain Monte Carlo (MCMC) for inference, and we find that certain executation orders perform better than the others:
   \begin{enumerate}
-    \item Inferring the number of strains $K$ is trivial.
+    \item Inferring the number of strains $K$ is trivial in comparison to the other parameters.
     \item Once $K$ is fixed, inferring strain proportions $\mathbf{w}$ become easier. Moreover, because of strains can be related within sample, it will form structured allele frequency imbalance. Therefore, it is helpful to propose relatedness structure at this step: Inferring  $\mathbf{w}$ and $\mathcal{S}$ at the same time.
-    \item Given fixed $K$, $\mathbf{w}$, it is straightforward to infer haplotypess $h$ with an appropriate reference panel.
+    \item Given fixed $K$, $\mathbf{w}$, it becomes straightforward to infer haplotypes $h$ with an appropriate reference panel.
   \end{enumerate}
   \item A reference panel is ideally to be as diverse as possible to capture the key genomic backbones of the mixed parasites. An appropriate reference panel is essential for ensuring high haplotyle qualities.
   \item In the case of balanced mixings, a good reference panel can tease mixed strains apart, a less-appropriate reference panel may lead to underestimate $K$.
@@ -78,10 +78,9 @@ To formalize our problem, a mixed infection can be completely described by the n
 In light of our previous experience, we propose (I) a novel approach with LASSO to optimise the reference panel and (II) an optimised workflow for deconvolution.
 
 \subsection{DEploid-Lasso}
-Let $y$ denote the within sample allele frequency of the mixed sample. Assuming genotypes of each strain (in the reference panel $X$) are independent covariates, we can fit a linear model on $y$ as $y = \beta_0 +  \overrightarrow{\beta} X$. Then the obejective of LASSO is to
-to find the $\overrightarrow{\beta}$ and $\lambda$ such that, $\displaystyle \min _{\overrightarrow{\beta}}||y - \beta_{0} - \overrightarrow{\beta} X|| ^{2} + \lambda ||\overrightarrow{\beta}||_{1} $ \citep{Friedman2010}.
+Let $y$ denote the within sample allele frequency of the mixed sample. Assuming genotypes of each strain (in the reference panel $X$) are independent covariates, we can fit a linear model on $y$ as $y = \beta_0 +  \overrightarrow{\beta} X$, where $\overrightarrow{\beta}$ are the weights of the reference strains that contribute towards the estimated within-sample allele frequency of the mixed genome. A key feature of using the LASSO approach is that $\overrightarrow{\beta}$ is sparse. It produces zero weights for many reference strains in the panel. Hence we can reduce the size of the reference panel. Our obejective of LASSO is to find the $\overrightarrow{\beta}$ and $\lambda$ such that, $\displaystyle \min _{\overrightarrow{\beta}}||y - \beta_{0} - \overrightarrow{\beta} X|| ^{2} + \lambda ||\overrightarrow{\beta}||_{1} $ \citep{Friedman2010}.
 
-In practice, we search for $\lambda$s between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \bf{0}$, then gradually adding reference strains into the model by altering $\beta$s into non-zeros one at the time. We keep encluding new reference strains if the new model would reduce the likelihood deviance by one percent. The LASSO approach enables to discard references strain with zero $\beta$s. We further reduce the size of reference panel by opt-out $\beta$s that are below 0.01. Note that, if the order of including reference strains changes,
+In practice, we search for $\lambda$s between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \bf{0}$, then gradually adding reference strains into the model by altering $\beta$s into non-zeros one at the time. We keep encluding new reference strains if the new model would reduce the likelihood deviance by one percent. The LASSO approach enables to discard references strain with zero $\beta$s. We further reduce the size of reference panel by opt-out $\beta$s that are below 0.01. Note that the choice of final reference strains depend on the order when reference strain is included in the computation.
 
 
 \subsection{DEploid-Best}
@@ -91,6 +90,8 @@ In the first attempt, \citet{Zhu2017}'s approach executes \texttt{DEploid} once 
  number of strains and relative proportions all at the same time.
 
 'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
+
+Instead of executing 15 times, we run it once ...
 
 % What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
 
@@ -104,6 +105,10 @@ In the first attempt, \citet{Zhu2017}'s approach executes \texttt{DEploid} once 
 
 \section{Discussion}
 blah blahs
+
+1.
+
+Details see in Supplementary materials.
 
 
 
