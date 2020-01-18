@@ -32,7 +32,7 @@ $^{\text{\sf 2}}$ Big Data Institute, Li Ka Shing Centre for Health Information 
 As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes mixed genome sequence and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
 \\
 \textbf{Results:}
-To improve the scalability issue with the number of reference strains, we present an upgraded version --- {\tt DEploid-LASSO}, which can take thousands of reference strains, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
+To improve the scalability issue with the number of reference strains, we present an upgraded version/feature --- {\tt DEploid-LASSO}, which can take thousands of reference strains, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
 \\
 \textbf{Availability:} The open source implementation {\tt DEploid-BEST} is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
 \textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com} \href{gil.mcvean@bdi.ox.ac.uk}{gil.mcvean@bdi.ox.ac.uk}\\
@@ -61,7 +61,7 @@ To formalize our problem, a mixed infection can be completely described by the n
   % In practice, \texttt{DEploid} uses Markov chain Monte Carlo (MCMC) approaches.
   This allows us to be flexible with inference process orders. In practice, we use Markov chain Monte Carlo (MCMC) for inference, and we find that certain executation orders perform better than the others:
   \begin{enumerate}
-    \item Inferring the number of strains $K$ is trivial in comparison to the other parameters.
+    \item Inferring the number of strains $K$ is trivial in comparison to the other parameters. A reference panel provides
     \item Once $K$ is fixed, inferring strain proportions $\mathbf{w}$ become easier. Moreover, because of strains can be related within sample, it will form structured allele frequency imbalance. Therefore, it is helpful to propose relatedness structure at this step: Inferring  $\mathbf{w}$ and $\mathcal{S}$ at the same time.
     \item Given fixed $K$, $\mathbf{w}$, it becomes straightforward to infer haplotypes $h$ with an appropriate reference panel.
   \end{enumerate}
@@ -77,7 +77,7 @@ To formalize our problem, a mixed infection can be completely described by the n
 
 In light of our previous experience, we propose (I) a novel approach with LASSO to optimise the reference panel and (II) an optimised workflow for deconvolution.
 
-\subsection{DEploid-Lasso}
+\subsection{DEploid-Lasso feature}
 Let $y$ denote the within sample allele frequency of the mixed sample. Assuming genotypes of each strain (in the reference panel $X$) are independent covariates, we can fit a linear model on $y$ as $y = \beta_0 +  \overrightarrow{\beta} X$, where $\overrightarrow{\beta}$ are the weights of the reference strains that contribute towards the estimated within-sample allele frequency of the mixed genome. A key feature of using the LASSO approach is that $\overrightarrow{\beta}$ is sparse. It produces zero weights for many reference strains in the panel. Hence we can reduce the size of the reference panel. Our obejective of LASSO is to find the $\overrightarrow{\beta}$ and $\lambda$ such that, $\displaystyle \min _{\overrightarrow{\beta}}||y - \beta_{0} - \overrightarrow{\beta} X|| ^{2} + \lambda ||\overrightarrow{\beta}||_{1} $ \citep{Friedman2010}.
 
 In practice, we search for $\lambda$s between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \bf{0}$, then gradually adding reference strains into the model by altering $\beta$s into non-zeros one at the time. We keep encluding new reference strains if the new model would reduce the likelihood deviance by one percent. The LASSO approach enables to discard references strain with zero $\beta$s. We further reduce the size of reference panel by opt-out $\beta$s that are below 0.01. Note that the choice of final reference strains depend on the order when reference strain is included in the computation.
@@ -85,15 +85,16 @@ In practice, we search for $\lambda$s between 0 and 1. We start by setting $\lam
 
 \subsection{DEploid-Best}
 
-In the first attempt of deconvolving mixed genome, \citet{Zhu2017}'s approach tried to solve $K$, $\mathbf{w}$ and $\mathbf{h}$ at the same time. The method struggle to recover the correct strain proportions when mixed strains are closely related. This problem was solved by \citet{Zhu2019} with an improved pipeline:, and , an improved alternative was to seperate the proportion
+In the first attempt of deconvolving mixed genome, \citet{Zhu2017}'s approach solves $K$, $\mathbf{w}$ and $\mathbf{h}$ at the same time. The method struggles to recover the correct strain proportions when mixed strains are closely related. This problem is addreed by \citet{Zhu2019} with an enhenced hidden Markov model for the within sample relatedness. At the same time, an improved pipeline was propsed to seperate the haplotype inference step after inferring $K$, $\mathbf{w}$ and within sample relatedness. Nonetheless, the lack of appropriate reference panel selection procedue constrains the haplotyle inference and its usage.
 
-When applying to the Pf3k dataset,
+% and improved pipeline:, and , an improved alternative was to seperate the proportion
+%
+% When applying to the Pf3k dataset,
+%
+%  number of strains and relative proportions all at the same time.
 
- number of strains and relative proportions all at the same time.
+The core of {\texttt DEploid} methods is MCMC, in the previous versions we recommand user to deconvolve with 15 repeations with different random seeds, and then take the concensed answer at the end. In the new version, 'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
 
-'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
-
-Instead of executing 15 times, we run it once ...
 
 % What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
 
