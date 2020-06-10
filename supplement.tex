@@ -1,10 +1,80 @@
 \documentclass{article}
+\usepackage{natbib,longtable,graphicx,tikz}
+\usepackage{fullpage}
 
+\title{Supplementary Material}
+\author{Sha Joe Zhu}
+\date{}
+
+\usepackage[label font=bf,labelformat=simple, position = top, justification=RaggedRight,singlelinecheck=false]{subfig}
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+\graphicspath{{./figures/}{./figures/otherFigures/}}
+
+\setcounter{equation}{0}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+\setcounter{page}{1}
+\makeatletter
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\theequation}{S\arabic{section}.\arabic{equation}}
+\renewcommand{\thefigure}{S\arabic{section}.\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{section}.\arabic{table}}
+\renewcommand{\bibnumfmt}[1]{[S1#1]}
+\renewcommand{\citenumfont}[1]{S1#1}
+%%%%%%%%%% Prefix a "S" to all equations, figures, tables and reset the counter %%%%%%%%%%
+
+%\floatsetup[figure]{style=plain,subcapbesideposition=top}
+%\newsubfloat{figure}
+
+
+
+%%%%%%% Start on new page
+\renewcommand{\thepage}{S1-\arabic{page}}
 \begin{document}
+\clearpage
+%\setcounter{page}{1}
+
+\maketitle
+\tableofcontents
+
+%\setcounter{section}{0}
+
+\newpage
+
 
 \section{Data cleaning and filtering}
 
+\subsection{High leverage data points}
+Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both reference and alternative allele count can mislead our model to fit extra strains. We used a threshold of $\geq$ 99.5\% coverage (default) to identify markers with extremely high allele counts. We further expand this list of potential ``bad markers'' by considering their nearest 10 neighbours on both sides along the genome, and identify the nearest markers as ``to be excluded'' if overlaps are found (see Figure~\ref{fig:fitering}). These poorly-genotyped variants are likely to be artefacts of mapping and genotype calling.
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.7\textwidth]{{PG0415-CaltVsRefAndWSAFvsPLAF}.png}
+  \caption{Figure on the top plot total allele counts across all markers. We observe a small number of heterozygous sites with high coverage (marked as crosses above), which can potentially mislead our model to over-fit the data with additional strains.  We use a threshold of $\geq$ 99.5\% coverage to identify markers with extremely high allele counts. Red crosses indicate markers that are filtered out. Figure on the left plots the alternative allele count against the reference allele count. As {\it P. falciparum} genomes are haploid, in clonal samples, one would expect to see either alternative or reference allele at any sites. Heterozygous sites are indications of mixed infection. The marked black crosses can mislead our model to overestimate the number of strains as two. Figure in the middle is the histogram of the allele frequency within sample. Figure on the right show allele frequency within sample, compare against the population average.
+  }
+  \label{fig:fitering}
+\end{figure}
+
+This process remains as a manual step, as it may cosider other sites. 
+
+\subsection{vqslod}
+
+The VQSLOD score provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your 
+
+
+
+% \FloatBarrier
+\bibliographystyle{chicagoa}
+\bibliography{dbp.bib}
+
+\newpage
+\renewcommand{\thepage}{S2--\arabic{page}}
+\setcounter{page}{1}
+
+
 \section{DEploid-LASSO deep dive}
+
+\newpage
 
 \section{DEploid }
 

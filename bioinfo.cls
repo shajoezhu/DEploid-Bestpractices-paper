@@ -14,7 +14,8 @@
 \newif\if@final
 
 \DeclareOption{draft}{\PassOptionsToPackage{draft}{graphicx}}
-\DeclareOption{b4paper}{\PassOptionsToPackage{b4}{crop}}
+% \DeclareOption{b4paper}{\PassOptionsToPackage{b4}{crop}}
+\DeclareOption{a4paper}{\PassOptionsToPackage{a4}{crop}}
 \DeclareOption{centre}{\PassOptionsToPackage{center}{crop}}
 \DeclareOption{crop}{\PassOptionsToPackage{cam}{crop}\global\@cropmarksontrue}
 \DeclareOption{nocrop}{\PassOptionsToPackage{off}{crop}\global\@cropmarksonfalse}

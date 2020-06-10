@@ -18,8 +18,8 @@
 \author[Zhu \textit{et~al}.]{Sha Joe Zhu\,$^{\text{\sfb 1,2},*}$ and Gil McVean\,$^{\text{\sfb 1,3},*}$}
 \address{
 $^{\text{\sf 1}}$ Big Data Institute, Li Ka Shing Centre for Health Information and Discovery, University of Oxford, Oxford, UK\\
-$^{\text{\sf 2}}$ TaiChi AI, London, UK\\
-$^{\text{\sf 3}}$ Genomics plc, Oxford, UK\\
+$^{\text{\sf 2}}$ Current address: TaiChi AI, London, UK\\
+$^{\text{\sf 3}}$ Current address: Genomics plc, Oxford, UK\\
 }
 
 
@@ -30,13 +30,13 @@ $^{\text{\sf 3}}$ Genomics plc, Oxford, UK\\
 \editor{Associate Editor: XXXXXXX}
 
 \abstract{\textbf{Motivation:}
-As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes mixed genome sequence and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
+As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes mixed genome sequence read count and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
 \\
 \textbf{Results:}
 To improve the scalability issue with the number of reference strains, we present an upgraded version/feature --- {\tt DEploid-LASSO}, which can take thousands of reference strains, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
 \\
 \textbf{Availability:} The open source implementation {\tt DEploid-BEST} is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
-\textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com} \href{gil.mcvean@bdi.ox.ac.uk}{gil.mcvean@bdi.ox.ac.uk}\\
+\textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com} \href{gil.mcvean@bdi.ox.ac.uk}{\textcolor{red}{gil.mcvean@bdi.ox.ac.uk}}\\
 \textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics}
 online.}
 
@@ -44,9 +44,9 @@ online.}
 
 \section{Introduction}
 
-Deconvolution of mixed parasite genome is critical for understanding malaria epidemiology. However, this task is challenging for several reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover,  mixed parasite genome can be found in different infections: super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not. %In order to solve these problems, we aim to
+Deconvolution of mixed parasite genome is critical for understanding malaria epidemiology. However, this task is challenging for several reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover,  mixed parasite genome can be found in different infections: super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not. 
 
-To formalize our problem, a mixed infection can be completely described by the number of co-existing strains $K$, their relative proportions $\mathbf{w}$, within sample relatedness $r$ and their associated haplotypes $\mathbf{h}$. All four variables describe different biological scenarios and can be studied jointly \citep{Galinsky2015,Jack2016,Henden2016} or independently \citep{Chang2017}. To our knowledge, {\tt DEploid} \citep{Zhu2017,Zhu2019} is the only software package that can examine all four parameters under the same framework. {\tt DEploid} uses imbalanced allele frequencies to infer the number of strains and their relative proportions. The program conditions on haplotype structures within a reference panel as prior information to inferring strain sequences and estimates genome-wide in-sample relatedness by identity-by-descent (IBD) state $\mathcal{S}$ between mixed strains. These outputs will allow researchers to study mixed malaria infections with an unprecedented level of detail \citep{Zhu2019,auburn2019a}.
+\noindent To formalize our problem, a mixed infection can be completely described by the number of co-existing strains $K$, their relative proportions $\mathbf{w}$, within sample relatedness $r$ and their associated haplotypes $\mathbf{h}$. All four variables describe different biological scenarios and can be studied jointly \citep{Galinsky2015,Jack2016,Henden2016} or independently \citep{Chang2017}. To our knowledge, {\tt DEploid} \citep{Zhu2017,Zhu2019} is the only software package that can examine all four parameters under the same framework. {\tt DEploid} uses imbalanced allele frequencies to infer the number of strains and their relative proportions. The program conditions on haplotype structures within a reference panel as prior information to inferring strain sequences and estimates genome-wide in-sample relatedness by identity-by-descent (IBD) state $\mathcal{S}$ between mixed strains. These outputs will allow researchers to study mixed malaria infections with an unprecedented level of detail \citep{auburn2019a}.
 
 \section{Methods}
 \citet{Zhu2017,Zhu2019} have conducted series of simulation studies and validations on both {\it in vitro} and {\it in silico} mixed genomes to mimic real-world epidemiological scenario. The software package \texttt{DEploid} is then applied to in one of the largest malaria parasite genome research project \citep{pf3k} for deconvolve mixed parasite genomes. Here are some technical lessons we have learned in the process:
@@ -55,7 +55,7 @@ To formalize our problem, a mixed infection can be completely described by the n
   % \begin{equation*}
   $P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}| e, D) \propto L(K, \mathbf{w}, \mathbf{h}, \mathcal{S} | e, D) \times P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}), \label{eqn:post}$
 % \end{equation*}
-  where $D$ and $e$ denotes the sequence data and error rate respectively.  Moreover, we can decompose the joint prior as
+  where $D$ and $e$ denotes the sequence data and error rate respectively. Moreover, we can decompose the joint prior as
   % \begin{equation*}
   $ P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}) = P(K) \times P(\mathbf{w}|K) \times P(\mathcal{S}|K) \times P(\mathbf{h}|\mathcal{S}).$
   % \end{equation*}
@@ -76,15 +76,15 @@ To formalize our problem, a mixed infection can be completely described by the n
     % \end{enumerate}
 \end{enumerate}
 
-In light of our previous experience, we propose (I) a novel approach with LASSO to optimise the reference panel and (II) an optimised workflow for deconvolution.
+In light of our previous experience, we propose (I) a novel approach with a LASSO algorithm to optimise the reference panel and (II) an optimised workflow for mixed genome deconvolution.
 
-\subsection{DEploid-Lasso feature}
+\subsection{Optimised reference panel with LASSO}
 Let $y$ denote the within sample allele frequency of the mixed sample. Assuming genotypes of each strain (in the reference panel $X$) are independent covariates, we can fit a linear model on $y$ as $y = \beta_0 +  \overrightarrow{\beta} X$, where $\overrightarrow{\beta}$ are the weights of the reference strains that contribute towards the estimated within-sample allele frequency of the mixed genome. A key feature of using the LASSO approach is that $\overrightarrow{\beta}$ is sparse. It produces zero weights for many reference strains in the panel. Hence we can reduce the size of the reference panel. Our obejective of LASSO is to find the $\overrightarrow{\beta}$ and $\lambda$ such that, $\displaystyle \min _{\overrightarrow{\beta}}||y - \beta_{0} - \overrightarrow{\beta} X|| ^{2} + \lambda ||\overrightarrow{\beta}||_{1} $ \citep{Friedman2010}.
 
 In practice, we search for $\lambda$s between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \bf{0}$, then gradually adding reference strains into the model by altering $\beta$s into non-zeros one at the time. We keep encluding new reference strains if the new model would reduce the likelihood deviance by one percent. The LASSO approach enables to discard references strain with zero $\beta$s. We further reduce the size of reference panel by opt-out $\beta$s that are below 0.01. Note that the choice of final reference strains depend on the order when reference strain is included in the computation.
 
 
-\subsection{DEploid-Best}
+\subsection{Optimised work-flow}
 
 In the first attempt of deconvolving mixed genome, \citet{Zhu2017}'s approach solves $K$, $\mathbf{w}$ and $\mathbf{h}$ at the same time. The method struggles to recover the correct strain proportions when mixed strains are closely related. This problem is addreed by \citet{Zhu2019} with an enhenced hidden Markov model for the within sample relatedness. At the same time, an improved pipeline was propsed to seperate the haplotype inference step after inferring $K$, $\mathbf{w}$ and within sample relatedness. Nonetheless, the lack of appropriate reference panel selection procedue constrains the haplotyle inference and its usage.
 
@@ -94,7 +94,7 @@ In the first attempt of deconvolving mixed genome, \citet{Zhu2017}'s approach so
 %
 %  number of strains and relative proportions all at the same time.
 
-The core of {\texttt DEploid} methods is MCMC, in the previous versions we recommand user to deconvolve with 15 repeations with different random seeds, and then take the concensed answer at the end. In the new version, 'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
+The core of \texttt{DEploid} methods is MCMC, in the previous versions we recommended user to repeat the deconvolution 15 times with different random seeds, and then take the consensus answer at the end. In the new version, 'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
 
 
 % What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
