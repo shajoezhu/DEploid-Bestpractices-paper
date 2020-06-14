@@ -35,12 +35,47 @@
 %\setcounter{page}{1}
 
 \maketitle
+\begin{abstract}
+\noindent In the supplementary material, we include background information of the data set, method details of constructing reference panels, as well as data filtering strategies, and rationale behind the choice of parameters.
+\end{abstract}
+
+
 \tableofcontents
 
 %\setcounter{section}{0}
 
 \newpage
 
+\section{Pf3k data set}
+
+
+2,375 samples from multiple sampling sites in Africa and Asia, contributed by a number of P. falciparum Community Project partner studies \citep{Duffy2015,Kamau2015,eLife2016,Mobegi2014,Amato2017,Miotto2013,Ocholla2014,Amambua-Ngwa2012}
+
+137 samples from Senegal that were contributed by the Broad Institute (link is external)\citep{Wong2017}
+
+
+5 lab clonal samples (7G8, GB4, KH02, KE01, GN01) used for validation
+New samples:
+
+96 crosses samples comprising parents and progeny from the P. falciparum Genetic Crosses project \citep{Miles2016}
+
+
+27 mixed lab strains in varying proportions created by Dr Jason Wendler \citep{Wendler2015}
+
+
+Divide into lab and field samples,
+
+Pie chart to show the number of samples 
+
+
+\subsection{Data quality}
+
+% \citet{}
+
+
+
+\newpage
+\renewcommand{\thepage}{S2--\arabic{page}}
 
 \section{Data cleaning and filtering}
 
@@ -55,20 +90,20 @@ Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both r
   \label{fig:fitering}
 \end{figure}
 
-This process remains as a manual step, as it may cosider other sites. 
+This process remains as a manual step, as it may consider other sites. 
 
 \subsection{vqslod}
 
 The VQSLOD score provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your 
 
+get a table
 
+chromsomes, by row,, col
 
-% \FloatBarrier
-\bibliographystyle{chicagoa}
-\bibliography{dbp.bib}
 
 \newpage
 \renewcommand{\thepage}{S2--\arabic{page}}
+
 \setcounter{page}{1}
 
 
@@ -77,5 +112,13 @@ The VQSLOD score provides a continuous estimate of the probability that each var
 \newpage
 
 \section{DEploid }
+
+\newpage
+
+\section{Github actions}
+
+% \FloatBarrier
+\bibliographystyle{chicagoa}
+\bibliography{dbp.bib}
 
 \end{document}
