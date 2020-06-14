@@ -32,7 +32,7 @@ main.aux: main.tex
 main.bbl: main.aux
 	bibtex main.aux
 
-supplement.pdf: supplement.tex ${supfigures} ${supfigurespdf} ${suptex} supplementReset.tex
+supplement.pdf: supplement.tex ${supfigures} ${supfigurespdf} ${suptex} supplementReset.tex supplement.bbl
 	pdflatex supplement.tex
 	pdflatex supplement.tex
 

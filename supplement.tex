@@ -1,6 +1,25 @@
 \documentclass{article}
 \usepackage{natbib,longtable,graphicx,tikz}
 \usepackage{fullpage}
+\usepackage{listings}
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  % keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  % stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+\lstset{language=bash}
+
 
 \title{Supplementary Material}
 \author{Sha Joe Zhu}
@@ -36,7 +55,7 @@
 
 \maketitle
 \begin{abstract}
-\noindent In the supplementary material, we include background information of the data set, method details of constructing reference panels, as well as data filtering strategies, and rationale behind the choice of parameters.
+\noindent In the supplementary material, we include background information of the data set, method details of the reference panel construction, as well as data filtering strategies, and rationale behind the choice of parameters.
 \end{abstract}
 
 
@@ -65,12 +84,39 @@ New samples:
 
 Divide into lab and field samples,
 
-Pie chart to show the number of samples 
+Pie chart to show the number of samples
+% \begin{figure}[ht]
+%   \centering
+%     \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
+% \end{figure}
+
+There are 2,640 samples from the Pf3k data set. Only 5 Nigeria samples are present in the Pf3k data which we regard as being insufficient sampling for a high-transmission country \citep{who2017profileNigeria}. Hence we have excluded Nigeria samples for any downstream analysis. We discard continent mismatched samples and samples containing mixed malaria species. We also exclude samples where sequencing depth is below 30 and less than 30\% of sites are callable. Finally, we exclude all lab strains (include reference strains, artificial mixtures, crosses samples) and duplicated samples for population level analysis, which leaves us with 2,344 field samples from 13 countries.
+
+
+\subsection{Data filtering}
+We ran {\tt DEploid-IBD} on high quality biallelic SNPs (both coding and non-coding, tagged with PASS at the QUAL column in the VCF file) from Pf3k~\citep{pf3k}. Before the additional filtering described below, this set contained 1,057,830 SNPs.
+\linespread{1}
+\begin{lstlisting}
+bcftools view \
+--include 'FILTER="PASS"' \
+--min-alleles 2 \
+--max-alleles 2 \
+--types snps \
+--output-file SNP_INDEL_Pf3D7_01_v3.high_quality_biallelic_snps.vcf.gz \
+--output-type z \
+SNP_INDEL_Pf3D7_01_v3.combined.filtered.vcf.gz
+\end{lstlisting}
 
 
 \subsection{Data quality}
 
-% \citet{}
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
+  \caption{VQSLOD}
+\end{figure}
+
+
 
 
 
@@ -90,15 +136,18 @@ Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both r
   \label{fig:fitering}
 \end{figure}
 
-This process remains as a manual step, as it may consider other sites. 
+This process remains as a manual step, as it may consider other sites.
 
-\subsection{vqslod}
+\subsection{Variant quality score log-odds}
 
-The VQSLOD score provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your 
+The variant quality score log-odds (VQSLOD) score measures how reliable each variant call is. For the Pf3k data set, all `PASS' sites have VQSLOD score above zero.
+
+% provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your
 
 get a table
 
 chromsomes, by row,, col
+
 
 
 \newpage
@@ -110,12 +159,36 @@ chromsomes, by row,, col
 \section{DEploid-LASSO deep dive}
 
 \newpage
+\renewcommand{\thepage}{S3--\arabic{page}}
+
+\setcounter{page}{1}
 
 \section{DEploid }
 
 \newpage
+\renewcommand{\thepage}{S4--\arabic{page}}
 
+\setcounter{page}{1}
 \section{Github actions}
+
+
+\newpage
+
+\renewcommand{\thepage}{S4--\arabic{page}}
+
+\setcounter{page}{1}
+\section{Deconvolution of the field samples}
+Different than before, we are going for whole genome
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
+  \caption{PCA}
+\end{figure}
+
+\newpage
+
+
 
 % \FloatBarrier
 \bibliographystyle{chicagoa}
