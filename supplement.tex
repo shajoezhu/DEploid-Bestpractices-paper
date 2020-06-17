@@ -99,9 +99,17 @@ For {\it in silico} lab mixtures, we used the lab strain GB4 to provide a whole-
 \vspace{.5cm}
 To test the accuracy of \texttt{DEploidIBD} in a more realistic setting, we created {\it in silico} mixtures of 2, 3 and 4 strains given different transmission scenarios from mosquito bites. Let $K$ denote the number strains within each sample, and $b$ denote the number of independent mosquito bites. In such a scenario, a mixed infection containing $K$ strains can be treated as a result of $b$-bite events, where $K \in \{2,3,4\}$ and $1~{\leq}~{b}~{\leq}~K$. For example, a $K=2$ mixed infection can result from co-transmission, where two strains are passed in a single bite ($b=1$); or by superinfection, where each strain is delivered by a unique bite ($b=2$). A mixed infection containing 3 strains is more complex: besides co-infection (3 strains in a single bite, $b=1$) and superinfection (3 strains in 3 bites, $b=3$), we can also have a super-infection scenario made up from a co-infection plus a clonal-infection ($b=2$). The complete simulation procedure (code) is available at \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
 
+\subsection{Data quality}
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
+  \caption{VQSLOD}
+\end{figure}
 
 
-\subsection{Data filtering}
+
+\subsection{Variant selection}
 We ran {\tt DEploid-IBD} on high quality biallelic SNPs (both coding and non-coding, tagged with PASS at the QUAL column in the VCF file) from Pf3k~\citep{pf3k}. Before the additional filtering described below, this set contained 1,057,830 SNPs.
 \linespread{1}
 \begin{lstlisting}
@@ -116,24 +124,21 @@ SNP_INDEL_Pf3D7_01_v3.combined.filtered.vcf.gz
 \end{lstlisting}
 
 
-\subsection{Data quality}
+\subsection{Variant quality score log-odds}
 
-\begin{figure}[ht]
-  \centering
-    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-  \caption{VQSLOD}
-\end{figure}
+The variant quality score log-odds (VQSLOD) score measures how reliable each variant call is. For the Pf3k data set, all `PASS' sites have VQSLOD score above zero.
+
+% provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your
+
+get a table
+
+chromsomes, by row,, col
 
 
 
+\subsection{Data cleaning and filtering}
 
-
-\newpage
-\renewcommand{\thepage}{S2--\arabic{page}}
-
-\section{Data cleaning and filtering}
-
-\subsection{High leverage data points}
+\subsubsection{High leverage data points}
 Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both reference and alternative allele count can mislead our model to fit extra strains. We used a threshold of $\geq$ 99.5\% coverage (default) to identify markers with extremely high allele counts. We further expand this list of potential ``bad markers'' by considering their nearest 10 neighbours on both sides along the genome, and identify the nearest markers as ``to be excluded'' if overlaps are found (see Figure~\ref{fig:fitering}). These poorly-genotyped variants are likely to be artefacts of mapping and genotype calling.
 
 \begin{figure}[ht]
@@ -146,15 +151,6 @@ Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both r
 
 This process remains as a manual step, as it may consider other sites.
 
-\subsection{Variant quality score log-odds}
-
-The variant quality score log-odds (VQSLOD) score measures how reliable each variant call is. For the Pf3k data set, all `PASS' sites have VQSLOD score above zero.
-
-% provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your
-
-get a table
-
-chromsomes, by row,, col
 
 
 
