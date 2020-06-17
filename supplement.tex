@@ -1,6 +1,6 @@
 \documentclass{article}
 \usepackage{natbib,longtable,graphicx,tikz}
-\usepackage{fullpage}
+\usepackage{fullpage, url, hyperref}
 \usepackage{listings}
 \lstset{frame=tb,
   language=Java,
@@ -64,8 +64,8 @@
 %\setcounter{section}{0}
 
 \newpage
-
-\section{Pf3k data set}
+\section{Data}
+\subsection{Pf3k data set}
 
 
 2,375 samples from multiple sampling sites in Africa and Asia, contributed by a number of P. falciparum Community Project partner studies \citep{Duffy2015,Kamau2015,eLife2016,Mobegi2014,Amato2017,Miotto2013,Ocholla2014,Amambua-Ngwa2012}
@@ -91,6 +91,14 @@ Pie chart to show the number of samples
 % \end{figure}
 
 There are 2,640 samples from the Pf3k data set. Only 5 Nigeria samples are present in the Pf3k data which we regard as being insufficient sampling for a high-transmission country \citep{who2017profileNigeria}. Hence we have excluded Nigeria samples for any downstream analysis. We discard continent mismatched samples and samples containing mixed malaria species. We also exclude samples where sequencing depth is below 30 and less than 30\% of sites are callable. Finally, we exclude all lab strains (include reference strains, artificial mixtures, crosses samples) and duplicated samples for population level analysis, which leaves us with 2,344 field samples from 13 countries.
+
+\subsection{Generating {\it in silico} mixtures for deconvolution benchmark}
+\subsection{{\it In silico} mixtures of lab strains}
+For {\it in silico} lab mixtures, we used the lab strain GB4 to provide a whole-genome read depth profile. We drew Bernoulli variables to simulate alternative allele counts, with the probability of success as the adjusted within sample allele frequency at each position. The expected WSAF is the dot product of the genotype of the lab strains: 3D7, Dd2, HB3, 7G8 and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, and the mixture proportion of 0.1, 0.2, 0.4 and 0.3 will lead to an expected WSAF of 0.7. We then further adjust the WSAF with an error term (0.01) to account for all technical error/noise: $0.7 \times(1-0.01) + (1-0.7) \times.01 = 0.696$.
+
+\vspace{.5cm}
+To test the accuracy of \texttt{DEploidIBD} in a more realistic setting, we created {\it in silico} mixtures of 2, 3 and 4 strains given different transmission scenarios from mosquito bites. Let $K$ denote the number strains within each sample, and $b$ denote the number of independent mosquito bites. In such a scenario, a mixed infection containing $K$ strains can be treated as a result of $b$-bite events, where $K \in \{2,3,4\}$ and $1~{\leq}~{b}~{\leq}~K$. For example, a $K=2$ mixed infection can result from co-transmission, where two strains are passed in a single bite ($b=1$); or by superinfection, where each strain is delivered by a unique bite ($b=2$). A mixed infection containing 3 strains is more complex: besides co-infection (3 strains in a single bite, $b=1$) and superinfection (3 strains in 3 bites, $b=3$), we can also have a super-infection scenario made up from a co-infection plus a clonal-infection ($b=2$). The complete simulation procedure (code) is available at \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
+
 
 
 \subsection{Data filtering}
@@ -163,7 +171,15 @@ chromsomes, by row,, col
 
 \setcounter{page}{1}
 
-\section{DEploid }
+\section{Major improvement from DEploid and DEploid-IBD}
+\subsection{Optimised reference panel per sample}
+
+
+\subsection{Reduced run time}
+
+\subsection{Improved inference for balanced mixtures}
+
+\subsection{Improved inference results for mixtures of 3- or 4-strains}
 
 \newpage
 \renewcommand{\thepage}{S4--\arabic{page}}
