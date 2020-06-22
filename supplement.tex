@@ -1,5 +1,12 @@
 \documentclass{article}
 \usepackage{natbib,longtable,graphicx,tikz}
+\usepackage{caption}
+\usepackage[label font=bf,labelformat=simple, position = top, justification=RaggedRight,singlelinecheck=false]{subfig}
+% \newsubfloat{figure}
+
+\renewcommand{\thesubfigure}{\Alph{subfigure}}
+\newsavebox{\measurebox}
+
 \usepackage{fullpage, url, hyperref}
 \usepackage{listings}
 \lstset{frame=tb,
@@ -45,6 +52,7 @@
 %\floatsetup[figure]{style=plain,subcapbesideposition=top}
 %\newsubfloat{figure}
 
+% \usepackage{subcaption}
 
 
 %%%%%%% Start on new page
@@ -64,46 +72,93 @@
 %\setcounter{section}{0}
 
 \newpage
-\section{Data}
+\section{Data and reference panel}
 \subsection{Pf3k data set}
 % The primary output of the project will be an open access data resource with companion publications on genomic diversity and population genetics that together provide a detailed description of P. falciparum genome variation across the major malaria endemic regions.
 %
 
-% The Pf3k data set is made up with four main data
-Given the source of these samples, Pf3k data set can be divided into four main parts:
-\begin{itemize}
-  \item \bf{Field samples} 2,375 samples from multiple sampling sites in Africa and Asia, contributed by a number of P. falciparum Community Project partner studies \citep{Duffy2015,Kamau2015,eLife2016,Mobegi2014,Amato2017,Miotto2013,Ocholla2014,Amambua-Ngwa2012} and 137 samples from Senegal that were contributed by the Broad Institute (link is external)\citep{Wong2017}
-
-  \item \bf{Lab clonal samples} 5 lab clonal samples (7G8, GB4, KH02, KE01, GN01) used for validation
-
-  \item \bf{Lab crosses samples} 96 crosses samples comprising parents and progeny from the P. falciparum Genetic Crosses project \citep{Miles2016}
-
-  \item \bf{Lab mixed samples} 27 mixed lab strains in varying proportions created by Dr Jason Wendler \citep{Wendler2015}
-
-\end{itemize}
+The Pf3k \citep{pf3k} dataset includes 2,640 {\it Plasmodium falciparum} 
 
 
-Pie chart to show the number of samples
-% \begin{figure}[ht]
-%   \centering
-%     \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-% \end{figure}
+can be divided into field and lab samples based on their sources, and clonal and mixed samples based on the mixtures based on our work \citep{Zhu2017, Zhu2019}, see Table~\ref{tab:pf3k} for details. Note, we drop the duplicated samples and use only the preferred ones.
 
-There are 2,640 samples from the Pf3k data set. Only 5 Nigeria samples are present in the Pf3k data which we regard as being insufficient sampling for a high-transmission country \citep{who2017profileNigeria}. Hence we have excluded Nigeria samples for any downstream analysis. We discard continent mismatched samples and samples containing mixed malaria species. We also exclude samples where sequencing depth is below 30 and less than 30\% of sites are callable. Finally, we exclude all lab strains (include reference strains, artificial mixtures, crosses samples) and duplicated samples for population level analysis, which leaves us with 2,344 field samples from 13 countries.
+TODO: check We also exclude samples where sequencing depth is below 30 and less than 30\% of sites are callable.
+
+
+% > table(meta$Type)
+
+% Field clonal    Field mix   Lab clonal      Lab mix 
+%         1365          979           86           27
+\begin{table}[h]
+    \centering
+    \begin{tabular}{cccc}\hline\hline
+                  &  Clonal samples  & Mixed samples & Total \\ \hline
+    Field samples &  1365  & 979 & \\
+    Lab samples &   &&\\
+    Total &   &&\\
+    \hline\hline
+    \end{tabular}
+    \caption{Field samples are collected from multiple sampling sites in Africa and Asia \citep{Duffy2015, Kamau2015, eLife2016, Mobegi2014, Amato2017, Miotto2013, Ocholla2014, Amambua-Ngwa2012, Wong2017}. Clonal and mixed field samples are identified by \citet{Zhu2019}. The lab clonal samples include 5 lab clonal samples (7G8, GB4, KH02, KE01, GN01) and 96 \textcolor{red}{check this number} crosses samples comprising parents and progeny from the {\it P. falciparum} Genetic Crosses project \citep{Miles2016}. The lab mixed samples include 27 mixed lab strains in varying proportions created by Dr Jason Wendler \citep{Wendler2015}. }
+    \label{tab:pf3k}
+\end{table}
+
+
+
+
 
 \subsection{Generating {\it in silico} mixtures for deconvolution benchmark}
 \subsection{{\it In silico} mixtures of lab strains}
-For {\it in silico} lab mixtures, we used the lab strain GB4 to provide a whole-genome read depth profile. We drew Bernoulli variables to simulate alternative allele counts, with the probability of success as the adjusted within sample allele frequency at each position. The expected WSAF is the dot product of the genotype of the lab strains: 3D7, Dd2, HB3, 7G8 and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, and the mixture proportion of 0.1, 0.2, 0.4 and 0.3 will lead to an expected WSAF of 0.7. We then further adjust the WSAF with an error term (0.01) to account for all technical error/noise: $0.7 \times(1-0.01) + (1-0.7) \times.01 = 0.696$.
+In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we generated four {\it in silico} lab mixtures: We used the lab strain GB4 to provide a whole-genome read depth profile. We drew Bernoulli variables to simulate alternative allele counts, with the probability of success as the adjusted within sample allele frequency at each position. The expected WSAF is the dot product of the genotype of the lab strains: 3D7, Dd2, HB3, 7G8 and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, and the mixture proportion of 0.1, 0.2, 0.4 and 0.3 will lead to an expected WSAF of 0.7. We then further adjust the WSAF with an error term (0.01) to account for all technical error/noise: $0.7 \times(1-0.01) + (1-0.7) \times.01 = 0.696$.
 
-\vspace{.5cm}
-To test the accuracy of \texttt{DEploidIBD} in a more realistic setting, we created {\it in silico} mixtures of 2, 3 and 4 strains given different transmission scenarios from mosquito bites. Let $K$ denote the number strains within each sample, and $b$ denote the number of independent mosquito bites. In such a scenario, a mixed infection containing $K$ strains can be treated as a result of $b$-bite events, where $K \in \{2,3,4\}$ and $1~{\leq}~{b}~{\leq}~K$. For example, a $K=2$ mixed infection can result from co-transmission, where two strains are passed in a single bite ($b=1$); or by superinfection, where each strain is delivered by a unique bite ($b=2$). A mixed infection containing 3 strains is more complex: besides co-infection (3 strains in a single bite, $b=1$) and superinfection (3 strains in 3 bites, $b=3$), we can also have a super-infection scenario made up from a co-infection plus a clonal-infection ($b=2$). The complete simulation procedure (code) is available at \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
+% \vspace{.5cm}
+% To test the accuracy of \texttt{DEploidIBD} in a more realistic setting, we created {\it in silico} mixtures of 2, 3 and 4 strains given different transmission scenarios from mosquito bites. Let $K$ denote the number strains within each sample, and $b$ denote the number of independent mosquito bites. In such a scenario, a mixed infection containing $K$ strains can be treated as a result of $b$-bite events, where $K \in \{2,3,4\}$ and $1~{\leq}~{b}~{\leq}~K$. For example, a $K=2$ mixed infection can result from co-transmission, where two strains are passed in a single bite ($b=1$); or by superinfection, where each strain is delivered by a unique bite ($b=2$). A mixed infection containing 3 strains is more complex: besides co-infection (3 strains in a single bite, $b=1$) and superinfection (3 strains in 3 bites, $b=3$), we can also have a super-infection scenario made up from a co-infection plus a clonal-infection ($b=2$). The complete simulation procedure (code) is available at \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
 
 \subsection{Data quality}
 
 \begin{figure}[ht]
-  \centering
-    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-  \caption{VQSLOD}
+% \sbox{\measurebox}{%
+%   \begin{minipage}[b]{.5\textwidth}
+  \subfloat
+    [coverage]
+    {\label{fig:figA}\includegraphics[width=.5\textwidth]{figures/sample_coverage.png}}
+%   \end{minipage}}
+% \sbox{\measurebox}{%
+%   \begin{minipage}[b]{.5\textwidth}
+  \subfloat
+    [VQLSOD]
+    {\label{fig:figb}\includegraphics[width=.5\textwidth]{placeholder.jpeg}}
+%   \end{minipage}}
+
+% \usebox{\measurebox}%\qquad
+
+% \begin{minipage}[b][\ht\measurebox][s]{.62\textwidth}
+% %\centering
+% \subfloat
+%   []
+%   {\label{fig:figB}\includegraphics[width=\textwidth]{hap_viterbi_hap1.pdf}}\\
+% %\vfill
+% \subfloat
+%   []
+%   {\label{fig:figC}\includegraphics[width=\textwidth]{hap_viterbi_hap2.pdf}}
+% \end{minipage}
+
+%   \begin{subfigure}{.5\textwidth}
+%   \centering
+%   % include first image
+%   \includegraphics[width=.8\linewidth]{placeholder.jpe}  
+%   \caption{Put your sub-caption here}
+%   \label{dataQ:sub-coverage}
+% \end{subfigure}
+% \begin{subfigure}{.5\textwidth}
+%   \centering
+%   % include second image
+%   \includegraphics[width=.8\linewidth]{placeholder.jpe}  
+%   \caption{Put your sub-caption here}
+%   \label{dataQ:sub-VQSLOD}
+% \end{subfigure}
+% \caption{Put your caption here}
+% \label{fig:dataQ}
+  
 \end{figure}
 
 
@@ -140,7 +195,7 @@ chromsomes, by row,, col
 \subsubsection{High leverage data points}
 Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both reference and alternative allele count can mislead our model to fit extra strains. We used a threshold of $\geq$ 99.5\% coverage (default) to identify markers with extremely high allele counts. We further expand this list of potential ``bad markers'' by considering their nearest 10 neighbours on both sides along the genome, and identify the nearest markers as ``to be excluded'' if overlaps are found (see Figure~\ref{fig:fitering}). These poorly-genotyped variants are likely to be artefacts of mapping and genotype calling.
 
-\begin{figure}[ht]
+\begin{figure}[htp]
   \centering
     \includegraphics[width=0.7\textwidth]{{PG0415-CaltVsRefAndWSAFvsPLAF}.png}
   \caption{Figure on the top plot total allele counts across all markers. We observe a small number of heterozygous sites with high coverage (marked as crosses above), which can potentially mislead our model to over-fit the data with additional strains.  We use a threshold of $\geq$ 99.5\% coverage to identify markers with extremely high allele counts. Red crosses indicate markers that are filtered out. Figure on the left plots the alternative allele count against the reference allele count. As {\it P. falciparum} genomes are haploid, in clonal samples, one would expect to see either alternative or reference allele at any sites. Heterozygous sites are indications of mixed infection. The marked black crosses can mislead our model to overestimate the number of strains as two. Figure in the middle is the histogram of the allele frequency within sample. Figure on the right show allele frequency within sample, compare against the population average.
@@ -149,6 +204,14 @@ Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both r
 \end{figure}
 
 This process remains as a manual step, as it may consider other sites.
+
+\subsection{Reference panel}
+
+\begin{figure}[ht]
+  \centering
+    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
+    \caption{PCA/tSNE/UMAP of the big panel}
+\end{figure}
 
 
 
@@ -160,6 +223,10 @@ This process remains as a manual step, as it may consider other sites.
 
 
 \section{DEploid-LASSO deep dive}
+\subsection{Model}
+Assume Independence 
+
+\subsection{Effective reference panel}
 
 \newpage
 \renewcommand{\thepage}{S3--\arabic{page}}
@@ -171,7 +238,7 @@ This process remains as a manual step, as it may consider other sites.
 
 
 \subsection{Reduced run time}
-\begin{figure}
+\begin{figure}{ht}
 \centering
 \includegraphics[width=.7\textwidth]{figures/placeholder.jpeg}
 \caption{bar plot of time, four bars, no panel, with panel, ibd, best practice}
