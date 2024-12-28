@@ -15,11 +15,11 @@
 \subtitle{Genome analysis}
 
 \title[Deconvolution of multiple infections]{DEploid Best practices}
-\author[Zhu \textit{et~al}.]{Sha Joe Zhu\,$^{\text{\sfb 1,2},*}$ and Gil McVean\,$^{\text{\sfb 1,3},*}$}
+\author[Zhu \textit{et~al}.]{Sha Joe Zhu\,$^{\text{\sfb 1,3},*}$ and Gil McVean\,$^{\text{\sfb 2,3},*}$}
 \address{
-$^{\text{\sf 1}}$ Big Data Institute, Li Ka Shing Centre for Health Information and Discovery, University of Oxford, Oxford, UK\\
-$^{\text{\sf 2}}$ Current address: TaiChi AI, London, UK\\
-$^{\text{\sf 3}}$ Current address: Genomics plc, Oxford, UK\\
+$^{\text{\sf 1}}$ Current address: Roche PD Data Sciences, Roche China Holding Ltd, Shanghai, China\\
+$^{\text{\sf 2}}$ Current address: Ellison Institute of Technology Oxford, Oxford, UK\\
+$^{\text{\sf 3}}$ Address when the project was originally initialted and completed: Big Data Institute, Li Ka Shing Centre for Health Information and Discovery, University of Oxford, Oxford, UK\\
 }
 
 
@@ -94,7 +94,7 @@ In the first attempt of deconvolving mixed genome, \citet{Zhu2017}'s approach so
 %
 %  number of strains and relative proportions all at the same time.
 
-The core of \texttt{DEploid} methods is MCMC, in the previous versions we recommended user to repeat the deconvolution 15 times with different random seeds, and then take the consensus answer at the end. In the new version, 'DEploid-BEST' executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ('DEploid-Lasso') learns the number of strain with optimised reference panel. It ('DEploid-IBD') then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ('DEploid-Lasso') fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
+The core of \texttt{DEploid} methods is MCMC, in the previous versions we recommended user to repeat the deconvolution 15 times with different random seeds, and then take the consensus answer at the end. In the new version, {\tt DEploid-BEST} executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ({\tt DEploid-Lasso}) learns the number of strain with optimised reference panel. It ({\tt DEploid-IBD}) then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ({\tt DEploid-Lasso}) fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
 
 
 % What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
@@ -102,24 +102,16 @@ The core of \texttt{DEploid} methods is MCMC, in the previous versions we recomm
 % This is an optimised pipeline
 %
 % \begin{figure}[h]
-%   \includegraphics[width = .5\textwidth]{scheme.pdf}
+%   \includegraphics[width = .5\textwidth]{}
 %   \caption{}
 %   \label{}
 % \end{figure}
 
 
-\section{Results}
 
-\section{Discussion}
-blah blahs
+\section{Results and Discussion}
+In order to make the package more accessible and reduce the complexity of installation under different enviorment. We move stable and generalized code into C++ libraries, and build R and Python front-end to interact with the program. See supplementary materials for details.
 
-1.
-
-Details see in Supplementary materials.
-
-
-
-% \section{Conclusion}
 
 
 
