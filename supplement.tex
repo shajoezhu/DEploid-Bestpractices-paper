@@ -273,6 +273,8 @@ To facilitate the development and maintenance of the DEploid software, we have m
   \item \textbf{DEploid-py (Python)}: A python interface for DEploid, allows user to directly interact with DEploid results, without save the results in text files and load them again for analysis.  
 \end{itemize}
 
+\begin{figure}[tbp]
+\centering
 \begin{tikzpicture}  
     [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.  
       
@@ -283,13 +285,15 @@ To facilitate the development and maintenance of the DEploid software, we have m
     \node (a5) at (45,10)  {DEploid-r (R)};  
     \node (a6) at (20,10)  {DEploid-py (Python)}; 
 
-    \draw (a1) -- (a4); % these are the straight lines from one vertex to another  
-    \draw (a2) -- (a4);  
-    \draw (a2) -- (a3);  
-    \draw (a4) -- (a5);  
-    \draw (a3) -- (a5);
-    \draw (a4) -- (a6);  
+    \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another  
+    \draw [<-] (a2) -- (a4);  
+    \draw [<-] (a2) -- (a3);  
+    \draw [<-] (a4) -- (a5);  
+    \draw [<-] (a3) -- (a5);
+    \draw [<-] (a4) -- (a6);  
 \end{tikzpicture}
+\caption{Package dependencies.}
+\end{figure}
  
 
 This modular approach allows for independent development and testing of each component, improving the overall robustness and flexibility of the software.
