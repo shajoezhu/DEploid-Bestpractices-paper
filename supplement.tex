@@ -27,6 +27,8 @@
 }
 \lstset{language=bash}
 
+\usepackage{tikz}  
+
 
 \title{Supplementary Material}
 \author{Sha (Joe) Zhu}
@@ -259,6 +261,38 @@ Assume Independence
 
 \setcounter{page}{1}
 \section{Modulerized package development}
+
+To facilitate the development and maintenance of the DEploid software, we have modularized the package into several components. Each component is responsible for a specific functionality, making the codebase more organized and easier to manage. The main modules are:
+
+\begin{itemize}
+  \item \textbf{DEploid-Lasso-lib (C++)}: Handles the input and preprocessing of genomic data.
+  \item \textbf{DEploid-vcf-lib (C++)}: Contains the core algorithms for deconvolution and inference.
+  \item \textbf{DEploid.utils (R)}: Utility functions for data preprocessing, 
+  \item \textbf{DEploid (C++)}: DEploid core functions, command line interface.
+  \item \textbf{DEploid-r (R)}: An R interface for DEploid, allows user to directly interact with DEploid results, without save the results in text files and load them again for analysis. Upstream direct dependencies include DEploid, DEploid.utils.
+  \item \textbf{DEploid-py (Python)}: A python interface for DEploid, allows user to directly interact with DEploid results, without save the results in text files and load them again for analysis.  
+\end{itemize}
+
+\begin{tikzpicture}  
+    [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.  
+      
+    \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};  
+    \node (a2) at (60,60)  {DEploid-vcf-lib (C++)}; 
+    \node (a3) at (50,40)  {DEploid.utils (R)};  
+    \node (a4) at (25,30) {DEploid (C++)};  
+    \node (a5) at (45,10)  {DEploid-r (R)};  
+    \node (a6) at (20,10)  {DEploid-py (Python)}; 
+
+    \draw (a1) -- (a4); % these are the straight lines from one vertex to another  
+    \draw (a2) -- (a4);  
+    \draw (a2) -- (a3);  
+    \draw (a4) -- (a5);  
+    \draw (a3) -- (a5);
+    \draw (a4) -- (a6);  
+\end{tikzpicture}
+ 
+
+This modular approach allows for independent development and testing of each component, improving the overall robustness and flexibility of the software.
 
 \subsection{}
 
