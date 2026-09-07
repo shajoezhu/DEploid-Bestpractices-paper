@@ -355,7 +355,7 @@ allele frequency} (WSAF) site by site, correlating the inferred WSAF
 ($\sum_j h_{sj}\,w_j$ over the recovered haplotypes $h$ and proportions $w$)
 against the simulated truth. Each of the 40 mixtures ($2 \times 5 \times 4$)
 was deconvolved by the classic pipeline, {\tt DEploid-IBD}, and
-{\tt DEploid-BEST} (single seed, $nSample=20$).
+{\tt DEploid-BEST} (single seed, $nSample=500$, $rate=8$).
 
 Table~S3 reports the per-site WSAF recovery. All three pipelines recover the
 mixture allele frequency with very high accuracy (Pearson $r$ in the range
@@ -365,14 +365,16 @@ strain-number misspecification. {\tt DEploid-BEST} attains this accuracy
 \emph{without} $K$ being supplied -- the classic and IBD pipelines were both
 fixed at the true $K = 4$ -- and its recovery is if anything marginally better
 than the fixed-$K$ pipelines in every scenario. {\tt DEploid-BEST}
-automatically selects a strain number close to the truth (mean $K \approx 3.5$
-across the 40 mixtures, versus the simulated $4$; Table~S3, last column): it
-does not require $K$ to be chosen by hand, yet it avoids the related-strain
-collapse that {\tt DEploid-IBD} exhibited on the lab mixtures (Table~S2).
-Together with the lab-strain benchmark (Table~S2) and the runtime scaling
-(Table~S1), this shows that on realistic field mixtures {\tt DEploid-BEST} is
-as accurate as a correctly specified classical deconvolution while removing the
-need to choose $K$ by hand.
+automatically selects a strain number (mean $K \approx 2.7$ across the 40
+mixtures, ranging $2.1$--$3.3$ by scenario, versus the simulated $4$;
+Table~S3, last column), under-estimating the true count by merging the most
+similar components. Crucially, it does so without $K$ being supplied, and this
+under-estimate does not degrade recovery: the mixture allele frequency is still
+recovered to $r \approx 0.99$ (Table~S3), matching the fixed-$K = 4$ classic
+and IBD pipelines. Together with the lab-strain benchmark (Table~S2) and the
+runtime scaling (Table~S1), this shows that on realistic field mixtures
+{\tt DEploid-BEST} is as accurate as a correctly specified classical
+deconvolution while removing the need to choose $K$ by hand.
 
 \input{tableS3}
 
