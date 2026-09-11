@@ -7,12 +7,14 @@
 
 \graphicspath{{figures/}}
 
+\usepackage{tikz}
+
 \begin{document}
 \firstpage{1}
 
 \subtitle{Genome analysis}
 
-\title[DEploid-BEST]{DEploid-BEST: an optimised workflow for deconvolving mixed \textit{Plasmodium falciparum} infections}
+\title[DEploid-BEST]{DEploid-BEST: an optimised workflow for deconvolving mixed \textit{P. falciparum} infections}
 \author[Zhu \textit{et~al}.]{Sha Joe Zhu\,$^{\text{\sfb 1,3},*}$ and Gil McVean\,$^{\text{\sfb 2,3},*}$}
 \address{
 $^{\text{\sf 1}}$ Current address: Roche PD Data Sciences, Roche China Holding Ltd, Shanghai, China\\
@@ -53,7 +55,7 @@ Deconvolution of mixed parasite genomes is critical for understanding malaria ep
   \item Given fixed $K$ and $\mathbf{w}$, it becomes straightforward to infer haplotypes $\mathbf{h}$ with an appropriate reference panel.
 \end{enumerate}
 
-These execution orders follow from the posterior decomposition of the model, which we recall in the Supplementary Material.
+These execution orders follow from the posterior decomposition of the model, which we recall in Section~S2.1 of the Supplementary Material.
 
 A reference panel should ideally be as diverse as possible to capture the key genomic backbones of the mixed parasites, and an appropriate panel is essential for ensuring high haplotype quality. In the case of balanced mixtures, a good reference panel can tease mixed strains apart, whereas a less appropriate panel may lead to underestimating $K$. Inferring the number of strains and relative abundance does not require whole-genome data: several hundred high-quality single-nucleotide polymorphism (SNP) sites are sufficient, and in the extreme case it is possible to gain quick insights by using only the longest chromosome (14) to infer $K$.
 
@@ -67,12 +69,55 @@ Let $y$ denote the within-sample allele frequency of the mixed sample, and let $
 
 In the first attempt at deconvolving mixed genomes, \citet{Zhu2017} solved $K$, $\mathbf{w}$ and $\mathbf{h}$ at the same time; this method struggles to recover the correct strain proportions when mixed strains are closely related. The problem was addressed by \citet{Zhu2019} with an enhanced hidden Markov model for within-sample relatedness, together with an improved pipeline that separates the haplotype-inference step from the inference of $K$, $\mathbf{w}$ and within-sample relatedness. Nonetheless, the lack of an appropriate reference-panel selection procedure constrains haplotype inference and its usage.
 
-The core of \texttt{DEploid} is Markov chain Monte Carlo (MCMC). In previous versions we recommended repeating the deconvolution 15 times with different random seeds and taking the consensus answer at the end. In the new version, {\tt DEploid-BEST} executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program {\tt DEploid-LASSO} learns the number of strains with an optimised reference panel. {\tt DEploid-IBD} then fixes the number of strains and tunes the strain proportions with an identity-by-descent model. Finally, {\tt DEploid-LASSO} fixes the number of strains and proportions, and uses the optimised reference panel again to infer and report the haplotypes.
+The core of \texttt{DEploid} is Markov chain Monte Carlo (MCMC). In previous versions we recommended repeating the deconvolution 15 times with different random seeds and taking the consensus answer at the end. In the new version, {\tt DEploid-BEST} executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program {\tt DEploid-LASSO} learns the number of strains with an optimised reference panel. {\tt DEploid-IBD} then fixes the number of strains and tunes the strain proportions with an identity-by-descent model. Finally, {\tt DEploid-LASSO} fixes the number of strains and proportions, and uses the optimised reference panel again to infer and report the haplotypes. The optimised execution order is
+summarised in Figure~\ref{fig:workflow}.
 
 \section{Results}
 
-% TODO (Figure 1): add a workflow diagram summarising the DEploid-BEST pipeline
-% (LASSO panel optimisation -> fix K -> IBD proportions -> haplotype inference).
+\begin{figure}[t]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, rounded corners, line width=0.6pt,
+                minimum height=1.3cm, font=\small},
+    inout/.style={rectangle, draw, dashed, line width=0.6pt,
+                minimum height=1.0cm, font=\small},
+    arrow/.style={->, >=stealth, line width=0.8pt},
+    midlab/.style={font=\footnotesize\itshape}
+  ]
+  \node[inout]            (rc)  at (0,0)    {\parbox{3.2cm}{\centering Mixture read counts}};
+  \node[inout]            (rp)  at (8.0,0)  {\parbox{3.2cm}{\centering Reference panel ($m$ strains)}};
+  \node[box, fill=blue!8] (s1)  at (4.0,-2.5)
+    {\parbox{6.8cm}{\centering \textbf{DEploid-LASSO}\par Optimise reference panel via sparse
+     $\overrightarrow{\beta}$ to an effective panel; learn strain number $K$}};
+  \node[box, fill=green!8](s2)  at (4.0,-5.2)
+    {\parbox{6.8cm}{\centering \textbf{DEploid-IBD}\par Fix $K$; infer proportions $\mathbf{w}$ with an
+     identity-by-descent model}};
+  \node[box, fill=blue!8] (s3)  at (4.0,-7.7)
+    {\parbox{6.8cm}{\centering \textbf{DEploid-LASSO}\par Fix $K$ and $\mathbf{w}$; infer haplotypes
+     $\mathbf{h}$ from the optimised panel}};
+  \node[inout, fill=yellow!12] (out) at (4.0,-10.0)
+    {\parbox{6.8cm}{\centering Deconvoluted mixture: $K$, $\mathbf{w}$, $\mathbf{h}$\par \& recovered WSAF}};
+
+  \draw[arrow] (rc) -- (s1);
+  \draw[arrow] (rp) -- (s1);
+  \draw[arrow] (s1) -- node[midlab, midway, right] {effective panel, $K$} (s2);
+  \draw[arrow] (s2) -- node[midlab, midway, right] {$K$, $\mathbf{w}$, effective panel} (s3);
+  \draw[arrow] (s3) -- (out);
+\end{tikzpicture}%
+}
+\caption{The {\tt DEploid-BEST} workflow. Given mixture read counts and a
+reference panel of $m$ strains, {\tt DEploid-LASSO} first optimises the panel
+(sparse weights $\protect\overrightarrow{\beta}$, keeping $\beta_j \ge 0.01$) and learns
+the strain number $K$ automatically; {\tt DEploid-IBD} then fixes $K$ and infers
+the proportions $\mathbf{w}$ under an identity-by-descent model; {\tt
+DEploid-LASSO} finally fixes $K$ and $\mathbf{w}$ and infers the haplotypes
+$\mathbf{h}$ from the optimised panel. The output is the deconvoluted mixture
+($K$, $\mathbf{w}$, $\mathbf{h}$) and the recovered within-sample allele
+frequency (WSAF). The execution order follows the posterior decomposition
+(Section~S2.1).}
+\label{fig:workflow}
+\end{figure}
 
 On four \emph{in-silico} mixtures of four known lab strains with known
 proportions (including a balanced $0.25/0.25/0.25/0.25$ mixture),

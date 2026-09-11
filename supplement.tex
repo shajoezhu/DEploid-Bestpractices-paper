@@ -190,6 +190,7 @@ This process remains a manual step, as it may consider other sites.
 
 \section{DEploid-LASSO deep dive}
 \subsection{Model}
+\label{sec:model}
 We recall the notation of \citet{Zhu2019}. Using a Bayesian approach, the posterior probability of the strain number $K$, proportions $\mathbf{w}$, haplotypes $\mathbf{h}$ and relatedness state $\mathcal{S}$ given the sequence data $D$ and error rate $e$ is
 \begin{equation}
 P(K, \mathbf{w}, \mathbf{h}, \mathcal{S} \mid e, D) \propto L(K, \mathbf{w}, \mathbf{h}, \mathcal{S} \mid e, D) \times P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}),
@@ -201,6 +202,7 @@ P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}) = P(K) \times P(\mathbf{w} \mid K) \ti
 This decomposition allows us to be flexible with the order of inference. In practice we use Markov chain Monte Carlo (MCMC) for inference, and we find that certain execution orders perform better than others, as described in the main text.
 
 \subsection{LASSO reference-panel optimisation}
+\label{sec:lasso}
 Let $y$ denote the within-sample allele frequency of the mixed sample. Assuming that the genotypes of each strain in the reference panel $X$ are independent covariates, we fit the linear model
 \begin{equation}
 y = \beta_0 + \overrightarrow{\beta} X,
@@ -214,8 +216,23 @@ where $\overrightarrow{\beta}$ are the weights of the reference strains that con
 In practice we search for $\lambda$ between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \mathbf{0}$, then gradually add reference strains into the model by setting individual $\beta$s to non-zero values one at a time. We keep including new reference strains if the new model reduces the likelihood deviance by at least one percent. The LASSO approach lets us discard reference strains with zero $\beta$s, and we further reduce the panel by opting out $\beta$s below 0.01. Note that the choice of the final reference strains depends on the order in which reference strains are included in the computation.
 
 \subsection{Effective reference panel}
+\label{sec:effectpanel}
 
-% TODO: describe how the optimised (effective) panel is constructed and validated
+The LASSO step yields a \emph{sparse} weight vector $\overrightarrow{\beta}$; the
+effective reference panel is the subset of input strains with $\beta_j \ge
+0.01$ (Section~\ref{sec:lasso}). This is the covariate set actually passed to
+the downstream IBD haplotype inference, rather than the full $m$-strain panel.
+Because a strain is only admitted when it reduces the deviance by at least
+1\%, the effective panel size is set by the number of distinct components in
+the mixture -- typically a small multiple of $K$ -- and is essentially
+independent of the input panel size $m$. Two consequences follow. First, the
+downstream MCMC cost scales with the effective, not the full, panel size, which
+is why {\tt DEploid-BEST} runs in roughly constant time as $m$ grows from 10 to
+1000 (Table~S1). Second, by discarding redundant and related strains the
+effective panel is non-over-parameterised, allowing the strain number to be
+recovered automatically instead of collapsing related components as
+{\tt DEploid-IBD} does (Tables~S2--S3). The selection is performed per sample,
+since each mixture has its own composition.
 
 
 \newpage
@@ -382,14 +399,6 @@ deconvolution while removing the need to choose $K$ by hand.
 \renewcommand{\thepage}{S4--\arabic{page}}
 
 \setcounter{page}{1}
-\section{GitHub Actions}
-
-% TODO: describe the CI/CD setup (GitHub Actions) used for continuous integration and testing
-
-\newpage
-\renewcommand{\thepage}{S5--\arabic{page}}
-
-\setcounter{page}{1}
 \section{Modularised package development}
 
 To facilitate the development and maintenance of the DEploid software, we have modularised the package into several components. Each component is responsible for a specific functionality, making the codebase more organised and easier to manage. The main modules are:
@@ -429,7 +438,7 @@ This modular approach allows for independent development and testing of each com
 
 \newpage
 
-\renewcommand{\thepage}{S6--\arabic{page}}
+\renewcommand{\thepage}{S5--\arabic{page}}
 
 \setcounter{page}{1}
 \section{Deconvolution of the field samples}
