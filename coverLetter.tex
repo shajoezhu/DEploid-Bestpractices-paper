@@ -1,0 +1,123 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+
+% Layout: single-column letter on US-letter, generous margins.
+\setlength{\parindent}{0pt}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0.5in}
+\setlength{\topmargin}{0.25in}
+\setlength{\textheight}{9in}
+\setlength{\parskip}{6pt}
+
+\begin{document}
+
+% TODO: set the submission date (or leave \today to stamp automatically).
+\today
+
+\medskip
+
+% TODO: address to the appropriate editor. For a direct submission to
+% Bioinformatics, "The Editor-in-Chief" is the safe default; if a handling
+% Associate Editor is known, name them here. (The eLife-specific addressing in
+% the old Makefile is stale and should not be reused.)
+To the Editor-in-Chief\\
+\emph{Bioinformatics}\\
+Oxford University Press
+
+\medskip
+
+\noindent\textbf{Submission of an Application Note}
+
+\noindent\textit{DEploid-BEST: an optimised workflow for deconvolving mixed
+\emph{P.~falciparum} infections}
+
+\medskip
+
+Dear Editor,
+
+Please find enclosed our manuscript entitled \emph{DEploid-BEST: an optimised
+workflow for deconvolving mixed \emph{P.~falciparum} infections}, which we submit
+for consideration as an \textbf{Application Note} in \emph{Bioinformatics}.
+
+% TODO: confirm the standard originality/ exclusivity statement holds for this
+% submission (it does for a fresh submission; remove if resubmitting elsewhere).
+This work has not been published previously, is not under consideration for
+publication elsewhere, and, if accepted, will not be published elsewhere in
+substantially the same form.
+
+\medskip
+
+\noindent\textbf{Summary.}
+As a state-of-the-art method for malaria parasite genome deconvolution, the
+program \texttt{DEploid} takes read counts from a mixed sample and estimates the
+number of strains, their relative proportions and their sequences from a set of
+reference strains. This output provides a unique opportunity for researchers to
+study the epidemiology of infectious diseases. However, the complexity of
+\texttt{DEploid} is $\mathcal{O}(lm^{2})$, where $m$ is the number of reference
+strains and $l$ is the number of sites, so it does not scale well to reference
+panels with many strains. To address this, we present \texttt{DEploid-LASSO},
+which can take thousands of reference strains and shrink and optimise the panel,
+together with a revised pipeline that we call \texttt{DEploid-BEST}, the latest
+best practice for deconvolving unknown mixed genomes.
+
+\medskip
+
+\noindent\textbf{Why this work fits \emph{Bioinformatics}.}
+Mixed-genome deconvolution is central to malaria surveillance and
+transmission-mapping, yet routine use of \texttt{DEploid} has been limited by its
+quadratic scaling with reference-panel size and by the need to pre-specify the
+number of strains. \texttt{DEploid-BEST} removes both bottlenecks: a LASSO step
+selects an effective reference panel (so run time is roughly constant as the
+panel grows from 10 to 1000 strains), and the strain number is recovered
+automatically while matching the accuracy of a correctly specified classical
+deconvolution. We believe the tool, its open-source implementation, and the
+benchmarking methodology will be of direct practical value to the
+bioinformatics and malaria-epidemiology communities that \emph{Bioinformatics}
+serves, and we submit it as an Application Note describing readily usable
+software.
+
+\medskip
+
+\noindent\textbf{Availability and implementation.}
+The open source implementation is freely available at
+\url{https://github.com/DEploid-dev/DEploid} under the conditions of the GPLv3
+license. \texttt{DEploid-BEST} is implemented in C++ with an R interface.
+
+\medskip
+
+% TODO: list 3-5 potential reviewers (names + institutions + one-line rationale),
+% or delete this paragraph if the journal does not invite suggestions.
+\noindent\textbf{Suggested reviewers.}
+% TODO: e.g. Reviewer 1 -- Name, Institution (expertise: malaria genome deconvolution)
+% TODO: e.g. Reviewer 2 -- Name, Institution (expertise: reference-panel / LASSO methods)
+% TODO: e.g. Reviewer 3 -- Name, Institution (expertise: Plasmodium population genomics)
+
+\medskip
+
+\noindent\textbf{Conflict of interest and funding.}
+Software development and data analysis in this work were completed by S.J.Z.
+during a postdoc at the Big Data Institute. S.J.Z. is a principal data scientist
+at Roche; there is no conflict of interest. This work was supported by the
+Wellcome Trust grant [100956/Z/13/Z] to G.M.
+
+\medskip
+
+% TODO: confirm whether both authors should be listed as corresponding authors.
+Correspondence should be addressed to Sha Joe Zhu
+(\texttt{sha.joe.zhu@gmail.com}).
+
+\medskip
+
+Thank you for your consideration. We look forward to hearing from you.
+
+\medskip
+
+\noindent Sincerely,
+
+\medskip
+
+\noindent Sha Joe Zhu\\
+Gil McVean
+
+\end{document}

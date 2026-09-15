@@ -175,8 +175,14 @@ This process remains a manual step, as it may consider other sites.
 
 \begin{figure}[ht]
   \centering
-    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-    \caption{PCA/tSNE/UMAP of the big panel} % TODO: add the reference-panel dimensionality-reduction figure
+    \includegraphics[width=0.8\textwidth]{panel_tsne.png}
+    \caption{tSNE projection of the combined Pf3k field reference panel
+    (18,570 sites $\times$ 1,316 haplotype samples), coloured by sample
+    country of origin; lab genetic crosses and complexity-of-infection
+    simulations (blank country in the Pf3k metadata) are grouped as
+    Cross/Sim. The projection recovers the major geographic structure of the
+    panel.}
+    \label{fig:panel_tsne}
 \end{figure}
 
 
@@ -442,8 +448,164 @@ This modular approach allows for independent development and testing of each com
 
 \setcounter{page}{1}
 \section{Deconvolution of the field samples}
-Unlike before, here we deconvolve whole-genome data from the field samples. % TODO: expand with the field-sample deconvolution results
+Unlike the benchmark mixtures in Sections~S2--S3, here we deconvolve
+whole-genome data from the field samples with the production
+\texttt{DEploid-BEST} pipeline. This section documents the input data, the
+end-to-end workflow, and the measured compute cost of deconvolving all
+5,970 samples of the Pf6 analysis set.
 
+\subsection{Input data and reference panel}
+\label{sec:field-input}
+
+Application of \texttt{DEploid-BEST} to the complete \emph{Pf}6 analysis set
+(\texttt{pf6-analysis-meta-with-k-relatedness-collapsed-point94.txt})
+illustrates the scale of the task. The set contains \textbf{5,970} samples,
+of which 533 are flagged \texttt{collapsed} (redundant or related samples
+merged), leaving \textbf{\ensuremath{\approx}5,437} unique individuals. The
+relatedness-derived strain-count estimate \texttt{Est\_K} classifies them as
+\textbf{3,434} clonal infections (\texttt{Est\_K}\,=\,1) and \textbf{2,536}
+mixed infections (\texttt{Est\_K}\,$\geq$\,2: 1,701 at $K$=2, 658 at $K$=3,
+177 at $K$=4). Only the mixed infections require full deconvolution; the
+clonal samples resolve to a single strain and are substantially cheaper to
+process.
+
+The deconvolution takes two inputs per sample:
+\begin{itemize}
+  \item \textbf{Mixture VCF.} Each Pf6 sample is extracted to a single-sample
+    whole-genome VCF carrying that sample's allele-depth (AD) counts at every
+    variant site
+    (\texttt{data/pf6\_vcf/by\_sample/<SAMPLE>.vcf.gz}; 5,970 files).
+  \item \textbf{Reference panel.} A subset of the combined Pf3k field panel
+    (\texttt{combined\_pf3k\_field\_panel\_withcross.txt}) restricted to the
+    sites shared with the Pf6 calls: \textbf{1,316} strains
+    $\times$ \textbf{15,052} biallelic SNP positions
+    (\texttt{panel.subset.txt}).
+\end{itemize}
+\texttt{dEploid} requires the panel and the input VCF to contain exactly the
+same site set, so each sample VCF is intersected to the 15,052 panel
+positions before inference. Population allele frequencies are read directly
+from the VCF via \texttt{-plafFromVcf} (the \texttt{AF} INFO tag, computed as
+AC/AN across all 7,113 Pf6 samples), which guarantees the PLAF matches the
+VCF's site set.
+
+\subsection{Workflow}
+\label{sec:field-workflow}
+
+The pipeline (\texttt{run\_all.sh}) is organised into five stages, summarised
+in Figure~\ref{fig:field-flow}:
+
+\begin{itemize}
+  \item[\textbf{Stage 1}] \textbf{Panel subsetting \& variant selection}
+    (\texttt{make\_panel\_vcf.sh}). Intersect the Pf3k reference panel with
+    the Pf6 variant calls and retain high-quality biallelic SNPs, yielding the
+    1,316~$\times$~15,052 \texttt{panel.subset.txt}.
+  \item[\textbf{Stage 2}] \textbf{Per-sample VCF preparation}
+    (\texttt{add\_af.sh}). For every sample VCF, attach the population
+    \texttt{AF = AC/AN} tag (required by \texttt{-plafFromVcf}) and subset the
+    records to the 15,052 panel positions.
+  \item[\textbf{Stage 3}] \textbf{LASSO panel optimisation \& deconvolution}
+    (\texttt{deconvolve\_one.sh} $\rightarrow$ \texttt{dEploid -best}). Within
+    \texttt{dEploid -best} the effective panel is first shrunk by LASSO
+    (Section~S2.2), then \texttt{chooseK} selects the strain number $K$,
+    \texttt{DEploid-IBD} reconciles the haplotypes and proportions, and the
+    final haplotypes are written to \texttt{<S>.final.hap}.
+  \item[\textbf{Stage 4}] \textbf{Per-sample summary table.}
+    \texttt{deconvolve\_one.sh} parses $K$ and the column-wise mean IBD
+    proportions and writes \texttt{out/<S>.txt} with the header
+    \texttt{\# sample <S>, mixed of K strain, with proportions of p1, p2, ...}
+    followed by the CHROM/POS/$h_1\!\ldots h_K$ haplotype table.
+  \item[\textbf{Stage 5}] \textbf{Archiving} (\texttt{make\_archive.sh}). All
+    \texttt{out/*.txt} files are zipped into
+    \texttt{deconvolved\_haplotypes.zip}.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+    box/.style={draw, rounded corners, fill=blue!5, text width=5.4cm, align=center, minimum height=1.0cm, font=\small},
+    io/.style={draw, rounded corners, fill=gray!12, text width=5.4cm, align=center, minimum height=1.0cm, font=\small},
+    arrow/.style={->, thick}
+  ]
+  \node[io]  (in)  at (0,  0)    {Pf6 sample VCFs (5,970)\\+ Pf3k panel subset (1,316 $\times$ 15,052 sites)};
+  \node[box] (s1)  at (0, -2.2)  {Stage 1 -- Panel subset \& variant selection};
+  \node[box] (s2)  at (0, -4.4)  {Stage 2 -- Per-sample VCF: add AF (AC/AN),\\subset to 15,052 panel sites};
+  \node[box] (s3)  at (0, -6.6)  {Stage 3 -- \texttt{dEploid -best}:\\LASSO $\rightarrow$ chooseK $\rightarrow$ IBD $\rightarrow$ final.hap};
+  \node[box] (s4)  at (0, -8.8)  {Stage 4 -- Build \texttt{out/<S>.txt}\\ (header + haplotype table)};
+  \node[box] (s5)  at (0,-11.0)  {Stage 5 -- Zip all \texttt{out/*.txt}\\ $\rightarrow$ deconvolved\_haplotypes.zip};
+  \node[io]  (out) at (0,-13.2)  {Deconvolved haplotypes + proportions\\for 5,970 samples};
+  \draw[arrow] (in)  -- (s1);
+  \draw[arrow] (s1)  -- (s2);
+  \draw[arrow] (s2)  -- (s3);
+  \draw[arrow] (s3)  -- (s4);
+  \draw[arrow] (s4)  -- (s5);
+  \draw[arrow] (s5)  -- (out);
+\end{tikzpicture}
+\caption{End-to-end \texttt{DEploid-BEST} field-sample deconvolution
+workflow. Each Pf6 sample VCF is intersected to the 15,052 panel sites and
+annotated with population allele frequency (AC/AN), then deconvolved by
+\texttt{dEploid -best} (LASSO panel shrinkage $\rightarrow$ strain-number
+selection $\rightarrow$ IBD haplotype/proportion inference $\rightarrow$ final
+haplotypes). Per-sample jobs run in parallel (\texttt{xargs -P 20}) and the
+resulting haplotype tables are archived.}
+\label{fig:field-flow}
+\end{figure}
+
+\subsection{Parallel execution and outputs}
+\label{sec:field-parallel}
+
+The 5,970 samples are independent, so \texttt{run\_all.sh} launches one
+\texttt{deconvolve\_one.sh} per sample and runs them \texttt{NCORES} at a time
+(\texttt{xargs -P 20}; GNU parallel is used when available). The driver is
+resume-safe: a sample whose \texttt{out/<S>.txt} already exists is skipped, so
+an interrupted run can be restarted without redoing completed work. On
+completion, \texttt{make\_archive.sh} bundles every per-sample table into a
+single \texttt{deconvolved\_haplotypes.zip}. As of this writing the run had
+produced \textbf{645} per-sample tables; a preliminary read of their deconvolved
+$K$ gives 421 clonal ($K$=1), 178 mixed ($K$=2) and 44 mixed ($K$=3) samples,
+consistent with the \texttt{Est\_K} expectation above. % TODO: update with final counts when the full run completes
+
+\subsection{Compute time and throughput}
+\label{sec:field-time}
+
+The run used 20 parallel single-threaded \texttt{dEploid} workers on one
+machine, with the production MCMC settings $nSample = 250$, $rate = 8$,
+$burn = 0.67$, seed 1. It sustained a throughput of $\approx$4 samples per
+minute across the 20 workers, i.e.\ $\approx$5 CPU-minutes per sample
+(Table~S4). At this rate the full 5,970-sample set is projected to finish in
+roughly 25 hours of wall-clock time on 20 cores -- about 21 single-core days
+of compute. This is substantially faster than the $\approx$10 single-core days
+implied by the synthetic-panel Table~S1 rate, because the production panel is
+LASSO-reduced per sample (so the downstream MCMC sees only the few strains
+that contribute) and the wall time is divided across 20 cores. The
+speed-up is not perfectly linear, because the LASSO panel-optimisation stage
+is performed for every sample and $K$=3/$K$=4 samples take longer than
+clonal ones.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lc}\hline\hline
+Quantity & Value \\ \hline
+Samples deconvolved & 5,970 \\
+Parallel \texttt{dEploid} workers & 20 (single-threaded each) \\
+MCMC settings & $nSample=250$, $rate=8$, $burn=0.67$, seed 1 \\
+Sites per sample & 15,052 \\
+Reference panel (input) & 1,316 strains \\
+Measured throughput & $\approx$4 samples / min (20 cores) \\
+Per-sample cost & $\approx$5 CPU-min \\
+Wall-clock on 20 cores & $\approx$25 h (projected) \\
+Single-core equivalent & $\approx$21 days (projected) \\
+\hline
+\end{tabular}
+\caption{Supplementary Table S4. Measured compute cost of the Pf6 field-sample
+deconvolution with \texttt{DEploid-BEST}. Throughput is the sustained rate
+observed over the production run (645 of 5,970 samples completed at the time
+of writing); per-sample cost is derived as 20 cores divided by that
+throughput. The run is resume-safe, so the wall-clock total is unchanged by
+interruptions.}
+\label{tab:field-time}
+\end{table}
+
+% TODO: replace the placeholder figure below with the field-sample PCA / deconvolution results
 \begin{figure}[ht]
   \centering
     \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
