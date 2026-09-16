@@ -106,6 +106,50 @@ We also exclude samples where the sequencing depth is below 30 and where less th
 
 
 
+\subsection{Pf6 data set}
+\label{sec:pf6}
+
+The Pf6 analysis set is the sample collection deconvolved in Section~S5. It
+comprises \textbf{5,970} \emph{P.\ falciparum} samples drawn from the Pf6
+whole-genome sequencing release and curated into a non-redundant analysis
+set: duplicate samples and closely related individuals (relatedness above
+the 0.94 threshold encoded in the metadata file name
+\texttt{pf6-analysis-meta-with-k-relatedness-collapsed-point94.txt}) were
+collapsed, leaving the 5,970 samples used here.
+
+The set is geographically and temporally broad, spanning \textbf{29
+countries} grouped into \textbf{8 populations} (CAF, EAF, ESEA, OCE, SAM,
+SAS, WAF, WSEA) and collected between \textbf{2001 and 2015}. The five best
+represented countries are Cambodia (896 samples), Thailand (888), Ghana
+(851), Mali (426) and DR Congo (344); the remaining 24 countries contribute
+the rest. Each sample carries an ENA accession and a callable-site fraction
+(\texttt{X..callable}); the median sample is callable at \textbf{89.3\%} of
+sites (range 50.0--92.1\%), so even the shallowest sample retains a majority
+of the genome.
+
+Per-sample metadata also records a relatedness-derived strain-count estimate,
+\texttt{Est\_K}, which we use to separate clonal from mixed infections before
+deconvolution (Table~\ref{tab:pf6}):
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcc}\hline\hline
+                  &  Clonal (Est\_K=1)  & Mixed (Est\_K\,$\geq$\,2) \\ \hline
+    Samples &  3,434  & 2,536\\
+    \hline\hline
+    \end{tabular}
+    \caption{Strain-count classification of the 5,970-sample Pf6 analysis set
+    from the \texttt{Est\_K} relatedness estimate. The mixed-infections
+    stratum decomposes as 1,701 samples at $K$=2, 658 at $K$=3 and 177 at
+    $K$=4. Only the 2,536 mixed infections require full deconvolution; the
+    clonal samples resolve to a single strain.}
+    \label{tab:pf6}
+\end{table}
+
+\noindent Because \texttt{Est\_K} is only a prior, Section~S5 recovers the
+strain number and proportions for every sample directly with
+\texttt{DEploid-BEST}, without supplying $K$.
+
 \subsection{Generating {\it in silico} mixtures for deconvolution benchmark}
 \subsection{{\it In silico} mixtures of lab strains}
 In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we generated four {\it in silico} lab mixtures. We used the lab strain GB4 to provide a whole-genome read-depth profile, and drew Bernoulli variables to simulate alternative allele counts, with the probability of success set to the adjusted within-sample allele frequency (WSAF) at each position. The expected WSAF is the dot product of the genotype of the lab strains (3D7, Dd2, HB3, 7G8) and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, a mixture proportion of 0.1, 0.2, 0.4 and 0.3 leads to an expected WSAF of 0.7. We then adjust the WSAF with an error term (0.01) to account for technical error/noise: $0.7 \times (1-0.01) + (1-0.7) \times 0.01 = 0.696$.
@@ -115,21 +159,21 @@ In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we gene
 
 \subsection{Data quality}
 
-\begin{figure}[ht]
-% \sbox{\measurebox}{%
-%   \begin{minipage}[b]{.5\textwidth}
-  \subfloat
-    [coverage]
-    {\label{fig:figA}\includegraphics[width=.5\textwidth]{figures/sample_coverage.png}}
-%   \end{minipage}}
-% \sbox{\measurebox}{%
-%   \begin{minipage}[b]{.5\textwidth}
-  \subfloat
-    [VQSLOD]
-    {\label{fig:figb}\includegraphics[width=.5\textwidth]{placeholder.jpeg}}
-%   \end{minipage}}
-% TODO: replace the VQSLOD placeholder figure
-\end{figure}
+% \begin{figure}[ht]
+% % \sbox{\measurebox}{%
+% %   \begin{minipage}[b]{.5\textwidth}
+%   \subfloat
+%     [coverage]
+%     {\label{fig:figA}\includegraphics[width=.5\textwidth]{figures/sample_coverage.png}}
+% %   \end{minipage}}
+% % \sbox{\measurebox}{%
+% %   \begin{minipage}[b]{.5\textwidth}
+%   \subfloat
+%     [VQSLOD]
+%     {\label{fig:figb}\includegraphics[width=.5\textwidth]{placeholder.jpeg}}
+% %   \end{minipage}}
+% % TODO: replace the VQSLOD placeholder figure
+% \end{figure}
 
 \subsection{Variant selection}
 We ran {\tt DEploid-IBD} on high-quality biallelic SNPs (both coding and non-coding, tagged with PASS at the QUAL column in the VCF file) from Pf3k~\citep{pf3k}. Before the additional filtering described below, this set contained 1,057,830 SNPs.
@@ -169,8 +213,6 @@ As in \citet{Zhu2017,Zhu2019}, we find that markers with high frequencies in bot
   \label{fig:fitering}
 \end{figure}
 
-This process remains a manual step, as it may consider other sites.
-
 \subsection{Reference panel}
 
 \begin{figure}[ht]
@@ -184,6 +226,37 @@ This process remains a manual step, as it may consider other sites.
     panel.}
     \label{fig:panel_tsne}
 \end{figure}
+
+The reference panel is the set of candidate haplotypes against which each
+mixed sample is deconvolved. We use the combined Pf3k field panel
+(\texttt{combined\_pf3k\_field\_panel\_withcross.txt}), which pools the
+haplotypes of 1,316 \emph{P.\ falciparum} samples spanning the major endemic
+regions represented in Pf3k \citep{pf3k} together with laboratory genetic
+crosses and complexity-of-infection (COI) simulation strains. Each sample
+contributes a haplotype across 18,570 biallelic SNP sites -- the same site
+set visualised in Figure~\ref{fig:panel_tsne}.
+
+Figure~\ref{fig:panel_tsne} shows a tSNE projection of the panel coloured by
+country of origin. The projection recovers the major geographic structure of
+the parasite population: African and Asian field isolates form largely
+separate clouds, while the lab genetic crosses and COI simulations (blank
+country in the metadata, grouped as Cross/Sim) sit apart from the field
+strains. This structure is what makes deconvolution informative -- the
+strains that best explain a given mixture tend to come from the same
+geographic lineage as the sample, so a panel representative of the relevant
+diversity is what allows the strain number and proportions to be recovered
+without supplying $K$ by hand (Sections~S2--S3).
+
+Although the full panel contains 1,316 strains, only a small fraction
+contributes to any individual mixture. Within \texttt{DEploid-BEST} the LASSO
+stage (Section~S2.2) selects a sparse subset of strains with non-zero weight
+($\beta_j \ge 0.01$), so the effective panel passed to the downstream IBD
+inference is typically a small multiple of the true strain number $K$ rather
+than the full 1,316. Consequently the downstream MCMC cost is set by the
+effective, not the full, panel size (Section~S2.3), which is what makes the
+field-scale deconvolution in Section~S5 tractable. For the Pf6 field samples
+the panel is further intersected to the 15,052 sites shared with the Pf6
+calls (Section~S5.1); the strain composition is unchanged.
 
 
 
@@ -419,28 +492,60 @@ To facilitate the development and maintenance of the DEploid software, we have m
 
 % TODO: a Python interface (DEploid-py) is planned but not yet implemented; add it here once available.
 
-\begin{figure}[tbp]
-\centering
-\begin{tikzpicture}  
-    [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.  
-      
-    \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};  
-    \node (a2) at (60,60)  {DEploid-vcf-lib (C++)}; 
-    \node (a3) at (50,40)  {DEploid.utils (R)};  
-    \node (a4) at (25,30) {DEploid (C++)};  
-    \node (a5) at (45,10)  {DEploid-r (R)};  
+% \begin{figure}[tbp]
+% \centering
+% \begin{tikzpicture}  
+%     [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.  
+%       
+%     \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};  
+%     \node (a2) at (60,60)  {DEploid-vcf-lib (C++)}; 
+%     \node (a3) at (50,40)  {DEploid.utils (R)};  
+%     \node (a4) at (25,30) {DEploid (C++)};  
+%     \node (a5) at (45,10)  {DEploid-r (R)};  
 
-    \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another  
-    \draw [<-] (a2) -- (a4);  
-    \draw [<-] (a2) -- (a3);  
-    \draw [<-] (a4) -- (a5);  
-    \draw [<-] (a3) -- (a5);  
-\end{tikzpicture}
-\caption{Package dependencies.}
-\end{figure}
+%     \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another  
+%     \draw [<-] (a2) -- (a4);  
+%     \draw [<-] (a2) -- (a3);  
+%     \draw [<-] (a4) -- (a5);  
+%     \draw [<-] (a3) -- (a5);  
+% \end{tikzpicture}
+% \caption{Package dependencies.}
+% \end{figure}
  
 
 This modular approach allows for independent development and testing of each component, improving the overall robustness and flexibility of the software.
+
+\subsection{Software repositories and data availability}
+\label{sec:repos}
+
+The analyses, tables and figures in this manuscript are reproduced with the
+following public repositories:
+
+\begin{itemize}
+  \item \textbf{DEploid} (C++ core deconvolution engine, including the
+    DEploid-Lasso-lib and DEploid-vcf-lib modules described above):
+    \url{https://github.com/DEploid-dev/DEploid}.
+  \item \textbf{DEploid-r} (R interface to DEploid):
+    \url{https://github.com/DEploid-dev/DEploid-r}.
+  \item \textbf{DEploid.utils} (R utility functions for data preprocessing):
+    \url{https://github.com/DEploid-dev/DEploid-Utilities}.
+  \item \textbf{DEploid-Bestpractices-github-actions} (the DEploid-BEST
+    workflow scripts, including the per-sample extraction used in
+    Section~S5, and the combined Pf3k reference panel
+    \texttt{combined\_pf3k\_field\_panel\_withcross.txt}):
+    \url{https://github.com/DEploid-dev/DEploid-Bestpractices-github-actions}.
+  \item \textbf{DEploid-Data-Benchmark-in\_silico\_field} (the in-silico
+    mixture benchmark data used in Sections~S2--S3):
+    \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
+  \item \textbf{DEploid-Bestpractices-paper} (this manuscript and its
+    \LaTeX\ source):
+    \url{https://github.com/shajoezhu/DEploid-Bestpractices-paper}.
+\end{itemize}
+
+\noindent All repositories are publicly available. The Pf6 field-sample
+deconvolution in Section~S5 was run with the DEploid \texttt{-best} workflow
+from DEploid-Bestpractices-github-actions; the resulting per-sample haplotype
+tables are archived as \texttt{deconvolved\_haplotypes.zip}. % TODO: add the archive DOI / release tag once deposited.
 
 \newpage
 
@@ -479,7 +584,13 @@ The deconvolution takes two inputs per sample:
     (\texttt{combined\_pf3k\_field\_panel\_withcross.txt}) restricted to the
     sites shared with the Pf6 calls: \textbf{1,316} strains
     $\times$ \textbf{15,052} biallelic SNP positions
-    (\texttt{panel.subset.txt}).
+    (\texttt{panel.subset.txt}). This is the same 1,316-strain panel
+    displayed in the tSNE projection of Figure~S1, but restricted to the
+    sites that are also present and callable in the Pf6 samples. The full
+    combined panel carries 18,570 sites; the $\approx$3,518 sites absent
+    here are panel positions that are missing, multiallelic, or fail the
+    PASS/biallelic filter in the Pf6 calls and are therefore dropped during
+    subsetting.
 \end{itemize}
 \texttt{dEploid} requires the panel and the input VCF to contain exactly the
 same site set, so each sample VCF is intersected to the 15,052 panel
@@ -604,13 +715,6 @@ throughput. The run is resume-safe, so the wall-clock total is unchanged by
 interruptions.}
 \label{tab:field-time}
 \end{table}
-
-% TODO: replace the placeholder figure below with the field-sample PCA / deconvolution results
-\begin{figure}[ht]
-  \centering
-    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-  \caption{PCA} % TODO: replace placeholder
-\end{figure}
 
 \newpage
 
