@@ -529,10 +529,14 @@ following public repositories:
     \url{https://github.com/DEploid-dev/DEploid-r}.
   \item \textbf{DEploid.utils} (R utility functions for data preprocessing):
     \url{https://github.com/DEploid-dev/DEploid-Utilities}.
-  \item \textbf{DEploid-Bestpractices-github-actions} (the DEploid-BEST
-    workflow scripts, including the per-sample extraction used in
-    Section~S5, and the combined Pf3k reference panel
-    \texttt{combined\_pf3k\_field\_panel\_withcross.txt}):
+  \item \textbf{pf6-deconvolution} (the DEploid-BEST per-sample deconvolution
+    pipeline used in Section~S5: panel subsetting, per-sample VCF preparation,
+    the \texttt{run\_all.sh} parallel driver and the
+    \texttt{deconvolved\_haplotypes.zip} archive):
+    \url{https://github.com/DEploid-dev/pf6-deconvolution}.
+  \item \textbf{DEploid-Bestpractices-github-actions} (the combined Pf3k
+    reference panel \texttt{combined\_pf3k\_field\_panel\_withcross.txt} and
+    the continuous-integration workflow):
     \url{https://github.com/DEploid-dev/DEploid-Bestpractices-github-actions}.
   \item \textbf{DEploid-Data-Benchmark-in\_silico\_field} (the in-silico
     mixture benchmark data used in Sections~S2--S3):
@@ -564,9 +568,9 @@ end-to-end workflow, and the measured compute cost of deconvolving all
 
 Application of \texttt{DEploid-BEST} to the complete \emph{Pf}6 analysis set
 (\texttt{pf6-analysis-meta-with-k-relatedness-collapsed-point94.txt})
-illustrates the scale of the task. The set contains \textbf{5,970} samples,
-of which 533 are flagged \texttt{collapsed} (redundant or related samples
-merged), leaving \textbf{\ensuremath{\approx}5,437} unique individuals. The
+illustrates the scale of the task. The set contains \textbf{5,970} samples, the curated non-redundant analysis
+set obtained after collapsing duplicate and closely related samples
+(relatedness above the 0.94 threshold encoded in the metadata file name). The
 relatedness-derived strain-count estimate \texttt{Est\_K} classifies them as
 \textbf{3,434} clonal infections (\texttt{Est\_K}\,=\,1) and \textbf{2,536}
 mixed infections (\texttt{Est\_K}\,$\geq$\,2: 1,701 at $K$=2, 658 at $K$=3,
@@ -680,10 +684,10 @@ consistent with the \texttt{Est\_K} expectation above. % TODO: update with final
 
 The run used 20 parallel single-threaded \texttt{dEploid} workers on one
 machine, with the production MCMC settings $nSample = 250$, $rate = 8$,
-$burn = 0.67$, seed 1. It sustained a throughput of $\approx$4 samples per
-minute across the 20 workers, i.e.\ $\approx$5 CPU-minutes per sample
+$burn = 0.67$, seed 1. It sustained a throughput of $\approx$2.6 samples per
+minute across the 20 workers, i.e.\ $\approx$7.6 CPU-minutes per sample
 (Table~S4). At this rate the full 5,970-sample set is projected to finish in
-roughly 25 hours of wall-clock time on 20 cores -- about 21 single-core days
+roughly 38 hours of wall-clock time on 20 cores -- about 32 single-core days
 of compute. This is substantially faster than the $\approx$10 single-core days
 implied by the synthetic-panel Table~S1 rate, because the production panel is
 LASSO-reduced per sample (so the downstream MCMC sees only the few strains
@@ -701,15 +705,15 @@ Parallel \texttt{dEploid} workers & 20 (single-threaded each) \\
 MCMC settings & $nSample=250$, $rate=8$, $burn=0.67$, seed 1 \\
 Sites per sample & 15,052 \\
 Reference panel (input) & 1,316 strains \\
-Measured throughput & $\approx$4 samples / min (20 cores) \\
-Per-sample cost & $\approx$5 CPU-min \\
-Wall-clock on 20 cores & $\approx$25 h (projected) \\
-Single-core equivalent & $\approx$21 days (projected) \\
+Measured throughput & $\approx$2.6 samples / min (20 cores) \\
+Per-sample cost & $\approx$7.6 CPU-min \\
+Wall-clock on 20 cores & $\approx$38 h (projected) \\
+Single-core equivalent & $\approx$32 days (projected) \\
 \hline
 \end{tabular}
 \caption{Supplementary Table S4. Measured compute cost of the Pf6 field-sample
 deconvolution with \texttt{DEploid-BEST}. Throughput is the sustained rate
-observed over the production run (645 of 5,970 samples completed at the time
+observed over the production run (5,190 of 5,970 samples completed at the time
 of writing); per-sample cost is derived as 20 cores divided by that
 throughput. The run is resume-safe, so the wall-clock total is unchanged by
 interruptions.}
