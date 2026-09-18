@@ -1,25 +1,25 @@
 \PassOptionsToPackage{utf8}{inputenc}
 \documentclass{bioinfo}
-\copyrightyear{2015} \pubyear{2015}
+\copyrightyear{2026} \pubyear{2026}
 
 \access{Advance Access Publication Date: Day Month Year}
-\appnotes{Manuscript Category}
+\appnotes{Applications Note}
 
 \graphicspath{{figures/}}
+
+\usepackage{tikz}
 
 \begin{document}
 \firstpage{1}
 
-\subtitle{Subject Section}
-
 \subtitle{Genome analysis}
 
-\title[Deconvolution of multiple infections]{DEploid Best practices}
+\title[DEploid-BEST]{DEploid-BEST: an optimised workflow for deconvolving mixed \textit{P. falciparum} infections}
 \author[Zhu \textit{et~al}.]{Sha Joe Zhu\,$^{\text{\sfb 1,3},*}$ and Gil McVean\,$^{\text{\sfb 2,3},*}$}
 \address{
 $^{\text{\sf 1}}$ Current address: Roche PD Data Sciences, Roche China Holding Ltd, Shanghai, China\\
 $^{\text{\sf 2}}$ Current address: Ellison Institute of Technology Oxford, Oxford, UK\\
-$^{\text{\sf 3}}$ Address when the project was originally initialted and completed: Big Data Institute, Li Ka Shing Centre for Health Information and Discovery, University of Oxford, Oxford, UK\\
+$^{\text{\sf 3}}$ Address when the project was originally initiated and completed: Big Data Institute, Li Ka Shing Centre for Health Information and Discovery, University of Oxford, Oxford, UK\\
 }
 
 
@@ -29,109 +29,132 @@ $^{\text{\sf 3}}$ Address when the project was originally initialted and complet
 
 \editor{Associate Editor: XXXXXXX}
 
-\abstract{\textbf{Motivation:}
-As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes mixed genome sequence read count and estimates the number of different strains in a sample, the proportion of each strain and their sequences from a set of reference strains. The program output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites. As a result, this method does not scale well with reference panels of many strains.
+\abstract{\textbf{Summary:}
+As a state-of-the-art method for malaria parasite genome deconvolution, the program {\tt DEploid} takes read counts from a mixed sample and estimates the number of strains, their relative proportions and their sequences from a set of reference strains. This output provides a unique opportunity for researchers to study the epidemiology of infectious diseases. However, the complexity of {\tt DEploid} is $\mathcal{O}(lm^2)$, where $m$ is the number of reference strains and $l$ is the number of sites, so it does not scale well to reference panels with many strains. To address this, we present {\tt DEploid-LASSO}, which can take thousands of reference strains and shrink and optimise the panel, together with a revised pipeline that we call {\tt DEploid-BEST}, the latest best practice for deconvolving unknown mixed genomes.
 \\
-\textbf{Results:}
-To improve the scalability issue with the number of reference strains, we present an upgraded version/feature --- {\tt DEploid-LASSO}, which can take thousands of reference strains, shrink and optimise for the target. With several new adjustments to the pipeline, we introduce the latest best practice --- {\tt DEploid-Best} for unknown mixed genome deconvolution.
-\\
-\textbf{Availability:} The open source implementation {\tt DEploid-BEST} is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license.\\
-\textbf{Contact:} \href{sha.joe.zhu@gmail.com}{sha.joe.zhu@gmail.com} \href{gil.mcvean@bdi.ox.ac.uk}{\textcolor{red}{gil.mcvean@bdi.ox.ac.uk}}\\
-\textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics}
-online.}
+\textbf{Availability and Implementation:}
+The open source implementation is freely available at https://github.com/DEploid-dev/DEploid under the conditions of the GPLv3 license. {\tt DEploid-BEST} is implemented in C++ with an R interface.\\
+\textbf{Contact:} sha.joe.zhu@gmail.com\\ % TODO: confirm Gil McVean's current email if both authors should be listed
+\textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics} online.}
 
 \maketitle
 
 \section{Introduction}
 
-Deconvolution of mixed parasite genome is critical for understanding malaria epidemiology. However, this task is challenging for several reasons: unknown number of strains and unknown abundance of each strain, sequence error, and lack of reference strains and highly variable recombination rate. Moreover,  mixed parasite genome can be found in different infections: super-infections transmitted by multiple mosquitoes or co-infections transmitted by a single mosquito. In the latter case, parasites undergo sexual recombination within the mosquito. Distinguishing different mixed infection scenarios is difficult but crucial for mapping malaria transmission processes. As super-infections reflect transmission intensity and co-infections does not. 
+Deconvolution of mixed parasite genomes is critical for understanding malaria epidemiology, but it is challenging: the number of strains and their abundances are unknown, sequencing is error-prone, reference strains may be lacking, and recombination rates vary widely. Moreover, mixed parasite genomes arise in different ways: super-infections are transmitted by multiple mosquitoes, whereas co-infections are transmitted by a single mosquito, in which parasites undergo sexual recombination. Distinguishing these scenarios is difficult but crucial for mapping malaria transmission, since super-infections reflect transmission intensity while co-infections do not.
 
-\noindent To formalize our problem, a mixed infection can be completely described by the number of co-existing strains $K$, their relative proportions $\mathbf{w}$, within sample relatedness $r$ and their associated haplotypes $\mathbf{h}$. All four variables describe different biological scenarios and can be studied jointly \citep{Galinsky2015,Jack2016,Henden2016} or independently \citep{Chang2017}. To our knowledge, {\tt DEploid} \citep{Zhu2017,Zhu2019} is the only software package that can examine all four parameters under the same framework. {\tt DEploid} uses imbalanced allele frequencies to infer the number of strains and their relative proportions. The program conditions on haplotype structures within a reference panel as prior information to inferring strain sequences and estimates genome-wide in-sample relatedness by identity-by-descent (IBD) state $\mathcal{S}$ between mixed strains. These outputs will allow researchers to study mixed malaria infections with an unprecedented level of detail \citep{auburn2019a}.
+\noindent A mixed infection can be completely described by the number of co-existing strains $K$, their relative proportions $\mathbf{w}$, within-sample relatedness $r$ and their associated haplotypes $\mathbf{h}$. These four variables describe different biological scenarios and can be studied jointly \citep{Galinsky2015,Jack2016,Henden2016} or independently \citep{Chang2017}. To our knowledge, {\tt DEploid} \citep{Zhu2017,Zhu2019} is the only software package that can examine all four parameters under the same framework. {\tt DEploid} uses imbalanced allele frequencies to infer the number of strains and their relative proportions, conditions on haplotype structures within a reference panel to infer strain sequences, and estimates genome-wide in-sample relatedness via identity-by-descent (IBD) states $\mathcal{S}$ between mixed strains. These outputs allow researchers to study mixed malaria infections with an unprecedented level of detail \citep{auburn2019a}.
 
-\section{Methods}
-\citet{Zhu2017,Zhu2019} have conducted series of simulation studies and validations on both {\it in vitro} and {\it in silico} mixed genomes to mimic real-world epidemiological scenario. The software package \texttt{DEploid} is then applied to in one of the largest malaria parasite genome research project \citep{pf3k} for deconvolve mixed parasite genomes. Here are some technical lessons we have learned in the process:
+\section{Implementation}
+
+\citet{Zhu2017,Zhu2019} conducted a series of simulation studies and validations on both {\it in vitro} and {\it in silico} mixed genomes to mimic real-world epidemiological scenarios, and the software was then applied to one of the largest malaria parasite genome research projects \citep{pf3k} to deconvolve mixed parasite genomes. Here we summarise the technical lessons learned in the process:
+
 \begin{enumerate}
-  \item Let's recall the notations from \citet{Zhu2019}, and use a Bayesian approach and define the posterior probabilities of $K$, $\mathbf{w}$, $\mathbf{h}$ and $\mathcal{S}$ as: % the following:
-  % \begin{equation*}
-  $P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}| e, D) \propto L(K, \mathbf{w}, \mathbf{h}, \mathcal{S} | e, D) \times P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}), \label{eqn:post}$
-% \end{equation*}
-  where $D$ and $e$ denotes the sequence data and error rate respectively. Moreover, we can decompose the joint prior as
-  % \begin{equation*}
-  $ P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}) = P(K) \times P(\mathbf{w}|K) \times P(\mathcal{S}|K) \times P(\mathbf{h}|\mathcal{S}).$
-  % \end{equation*}
-  % In practice, \texttt{DEploid} uses Markov chain Monte Carlo (MCMC) approaches.
-  This allows us to be flexible with inference process orders. In practice, we use Markov chain Monte Carlo (MCMC) for inference, and we find that certain executation orders perform better than the others:
-  \begin{enumerate}
-    \item Inferring the number of strains $K$ is trivial in comparison to the other parameters. A reference panel provides
-    \item Once $K$ is fixed, inferring strain proportions $\mathbf{w}$ become easier. Moreover, because of strains can be related within sample, it will form structured allele frequency imbalance. Therefore, it is helpful to propose relatedness structure at this step: Inferring  $\mathbf{w}$ and $\mathcal{S}$ at the same time.
-    \item Given fixed $K$, $\mathbf{w}$, it becomes straightforward to infer haplotypes $h$ with an appropriate reference panel.
-  \end{enumerate}
-  \item A reference panel is ideally to be as diverse as possible to capture the key genomic backbones of the mixed parasites. An appropriate reference panel is essential for ensuring high haplotyle qualities.
-  \item In the case of balanced mixings, a good reference panel can tease mixed strains apart, a less-appropriate reference panel may lead to underestimate $K$.
-  \item Inferring number of strains and relative abundance do not require whole genome data. Several hunderds of high quality single nucleotide polymorphism sites (SNPs) are sufficient. In the extreme case, it is possible to gain quick insights from using only the longest chromosome (14) to infer $K$.
-    % \begin{enumerate}
-    %   \item $K$ maybe different, but the expression holds.% observation k_1, k_2. if k_1 <= k_2, any pair of sum of p_2 belongs to p_1
-    %   % [p_chromi], [p_chromj]
-    %   \item Inference of proportions may differ between chromosomes, but the mathematical expression holds
-    % \end{enumerate}
+  \item Inferring the number of strains $K$ is trivial in comparison to the other parameters, so $K$ should be fixed first.
+  \item Once $K$ is fixed, inferring strain proportions $\mathbf{w}$ becomes easier. Because strains can be related within a sample, this forms structured allele-frequency imbalance; it is therefore helpful to infer $\mathbf{w}$ and the within-sample relatedness structure $\mathcal{S}$ at the same time.
+  \item Given fixed $K$ and $\mathbf{w}$, it becomes straightforward to infer haplotypes $\mathbf{h}$ with an appropriate reference panel.
 \end{enumerate}
 
-In light of our previous experience, we propose (I) a novel approach with a LASSO algorithm to optimise the reference panel and (II) an optimised workflow for mixed genome deconvolution.
+These execution orders follow from the posterior decomposition of the model, which we recall in Section~S2.1 of the Supplementary Material.
+
+A reference panel should ideally be as diverse as possible to capture the key genomic backbones of the mixed parasites, and an appropriate panel is essential for ensuring high haplotype quality. In the case of balanced mixtures, a good reference panel can tease mixed strains apart, whereas a less appropriate panel may lead to underestimating $K$. Inferring the number of strains and relative abundance does not require whole-genome data: several hundred high-quality single-nucleotide polymorphism (SNP) sites are sufficient, and in the extreme case it is possible to gain quick insights by using only the longest chromosome (14) to infer $K$.
+
+In light of this experience, we propose (I) a novel approach with a LASSO algorithm to optimise the reference panel and (II) an optimised workflow for mixed-genome deconvolution.
 
 \subsection{Optimised reference panel with LASSO}
-Let $y$ denote the within sample allele frequency of the mixed sample. Assuming genotypes of each strain (in the reference panel $X$) are independent covariates, we can fit a linear model on $y$ as $y = \beta_0 +  \overrightarrow{\beta} X$, where $\overrightarrow{\beta}$ are the weights of the reference strains that contribute towards the estimated within-sample allele frequency of the mixed genome. A key feature of using the LASSO approach is that $\overrightarrow{\beta}$ is sparse. It produces zero weights for many reference strains in the panel. Hence we can reduce the size of the reference panel. Our obejective of LASSO is to find the $\overrightarrow{\beta}$ and $\lambda$ such that, $\displaystyle \min _{\overrightarrow{\beta}}||y - \beta_{0} - \overrightarrow{\beta} X|| ^{2} + \lambda ||\overrightarrow{\beta}||_{1} $ \citep{Friedman2010}.
 
-In practice, we search for $\lambda$s between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \bf{0}$, then gradually adding reference strains into the model by altering $\beta$s into non-zeros one at the time. We keep encluding new reference strains if the new model would reduce the likelihood deviance by one percent. The LASSO approach enables to discard references strain with zero $\beta$s. We further reduce the size of reference panel by opt-out $\beta$s that are below 0.01. Note that the choice of final reference strains depend on the order when reference strain is included in the computation.
-
+Let $y$ denote the within-sample allele frequency of the mixed sample, and let $X$ be the genotypes of the reference strains. Assuming the genotypes are independent covariates, we fit the linear model $y = \beta_0 + \overrightarrow{\beta} X$, where $\overrightarrow{\beta}$ are the weights of the reference strains that contribute towards the estimated within-sample allele frequency of the mixed genome. A key feature of the LASSO approach is that $\overrightarrow{\beta}$ is sparse, producing zero weights for many reference strains in the panel and thereby reducing its size \citep{Friedman2010}. In practice we search over the penalty $\lambda$ between 0 and 1, adding reference strains into the model one at a time while each addition reduces the likelihood deviance by at least one percent, and we further reduce the panel by discarding weights below 0.01. The full model and algorithm are given in the Supplementary Material.
 
 \subsection{Optimised work-flow}
 
-In the first attempt of deconvolving mixed genome, \citet{Zhu2017}'s approach solves $K$, $\mathbf{w}$ and $\mathbf{h}$ at the same time. The method struggles to recover the correct strain proportions when mixed strains are closely related. This problem is addreed by \citet{Zhu2019} with an enhenced hidden Markov model for the within sample relatedness. At the same time, an improved pipeline was propsed to seperate the haplotype inference step after inferring $K$, $\mathbf{w}$ and within sample relatedness. Nonetheless, the lack of appropriate reference panel selection procedue constrains the haplotyle inference and its usage.
+In the first attempt at deconvolving mixed genomes, \citet{Zhu2017} solved $K$, $\mathbf{w}$ and $\mathbf{h}$ at the same time; this method struggles to recover the correct strain proportions when mixed strains are closely related. The problem was addressed by \citet{Zhu2019} with an enhanced hidden Markov model for within-sample relatedness, together with an improved pipeline that separates the haplotype-inference step from the inference of $K$, $\mathbf{w}$ and within-sample relatedness. Nonetheless, the lack of an appropriate reference-panel selection procedure constrains haplotype inference and its usage.
 
-% and improved pipeline:, and , an improved alternative was to seperate the proportion
-%
-% When applying to the Pf3k dataset,
-%
-%  number of strains and relative proportions all at the same time.
+The core of \texttt{DEploid} is Markov chain Monte Carlo (MCMC). In previous versions we recommended repeating the deconvolution 15 times with different random seeds and taking the consensus answer at the end. In the new version, {\tt DEploid-BEST} executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program {\tt DEploid-LASSO} learns the number of strains with an optimised reference panel. {\tt DEploid-IBD} then fixes the number of strains and tunes the strain proportions with an identity-by-descent model. Finally, {\tt DEploid-LASSO} fixes the number of strains and proportions, and uses the optimised reference panel again to infer and report the haplotypes. The optimised execution order is
+summarised in Figure~\ref{fig:workflow}.
 
-The core of \texttt{DEploid} methods is MCMC, in the previous versions we recommended user to repeat the deconvolution 15 times with different random seeds, and then take the consensus answer at the end. In the new version, {\tt DEploid-BEST} executes the deconvolution algorithms in an optimised sequence to best report the number of strains, proportions and haplotypes. The program ({\tt DEploid-Lasso}) learns the number of strain with optimised reference panel. It ({\tt DEploid-IBD}) then fixes the number of strains and tune the strain proportions with an identity by descent model. Finally, the program ({\tt DEploid-Lasso}) fixes the number of strains and proportions, and uses the optimised reference panel again to train and report the haplotypes.
+\section{Results}
 
+\begin{figure}[t]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, rounded corners, line width=0.6pt,
+                minimum height=1.3cm, font=\small},
+    inout/.style={rectangle, draw, dashed, line width=0.6pt,
+                minimum height=1.0cm, font=\small},
+    arrow/.style={->, >=stealth, line width=0.8pt},
+    midlab/.style={font=\footnotesize\itshape}
+  ]
+  \node[inout]            (rc)  at (0,0)    {\parbox{3.2cm}{\centering Mixture read counts}};
+  \node[inout]            (rp)  at (8.0,0)  {\parbox{3.2cm}{\centering Reference panel ($m$ strains)}};
+  \node[box, fill=blue!8] (s1)  at (4.0,-2.5)
+    {\parbox{6.8cm}{\centering \textbf{DEploid-LASSO}\par Optimise reference panel via sparse
+     $\overrightarrow{\beta}$ to an effective panel; learn strain number $K$}};
+  \node[box, fill=green!8](s2)  at (4.0,-5.2)
+    {\parbox{6.8cm}{\centering \textbf{DEploid-IBD}\par Fix $K$; infer proportions $\mathbf{w}$ with an
+     identity-by-descent model}};
+  \node[box, fill=blue!8] (s3)  at (4.0,-7.7)
+    {\parbox{6.8cm}{\centering \textbf{DEploid-LASSO}\par Fix $K$ and $\mathbf{w}$; infer haplotypes
+     $\mathbf{h}$ from the optimised panel}};
+  \node[inout, fill=yellow!12] (out) at (4.0,-10.0)
+    {\parbox{6.8cm}{\centering Deconvoluted mixture: $K$, $\mathbf{w}$, $\mathbf{h}$\par \& recovered WSAF}};
 
-% What is best practices, deploid is no longer one program/algorithm, rather than a collective suite of deconcolution methods. The best practices leverage our past experience and the new functionality to best deconvovle mixed genomes.
+  \draw[arrow] (rc) -- (s1);
+  \draw[arrow] (rp) -- (s1);
+  \draw[arrow] (s1) -- node[midlab, midway, right] {effective panel, $K$} (s2);
+  \draw[arrow] (s2) -- node[midlab, midway, right] {$K$, $\mathbf{w}$, effective panel} (s3);
+  \draw[arrow] (s3) -- (out);
+\end{tikzpicture}%
+}
+\caption{The {\tt DEploid-BEST} workflow. Given mixture read counts and a
+reference panel of $m$ strains, {\tt DEploid-LASSO} first optimises the panel
+(sparse weights $\protect\overrightarrow{\beta}$, keeping $\beta_j \ge 0.01$) and learns
+the strain number $K$ automatically; {\tt DEploid-IBD} then fixes $K$ and infers
+the proportions $\mathbf{w}$ under an identity-by-descent model; {\tt
+DEploid-LASSO} finally fixes $K$ and $\mathbf{w}$ and infers the haplotypes
+$\mathbf{h}$ from the optimised panel. The output is the deconvoluted mixture
+($K$, $\mathbf{w}$, $\mathbf{h}$) and the recovered within-sample allele
+frequency (WSAF). The execution order follows the posterior decomposition
+(Section~S2.1).}
+\label{fig:workflow}
+\end{figure}
 
-% This is an optimised pipeline
-%
-% \begin{figure}[h]
-%   \includegraphics[width = .5\textwidth]{}
-%   \caption{}
-%   \label{}
-% \end{figure}
+On four \emph{in-silico} mixtures of four known lab strains with known
+proportions (including a balanced $0.25/0.25/0.25/0.25$ mixture),
+{\tt DEploid-BEST} recovered the correct number of strains ($K = 4$) automatically
+in every case, whereas the classic pipeline required $K$ to be supplied and
+{\tt DEploid-IBD} collapsed to $K = 2$ even when $K = 4$ was given. For
+proportion recovery, {\tt DEploid-BEST} matched a classic run given the true
+$K$ (mean total absolute error 0.35 for both; IBD 1.06), the residual error
+reflecting an inherent 3D7/7G8 labelling ambiguity among the closely related
+reference strains. Full per-strain results are in Supplementary Table~S2.
 
+On realistic \emph{in-silico} mixtures built from genuine field haplotypes
+(two field populations, five mosaic scenarios, four known proportion sets),
+{\tt DEploid-BEST} recovers the mixture allele frequency with per-site
+Pearson $r$ of $0.97$--$0.99$ without any strain number being supplied,
+matching or slightly exceeding the fixed-$K = 4$ classic and IBD pipelines
+(Supplementary Table~S3).
 
+\texttt{DEploid-BEST} also reduces run time. On a single thread (Intel Core
+i9-14900HX, 31\,GB RAM) deconvolving $l = 18{,}570$ sites, the classic and IBD
+pipelines scale approximately quadratically with reference-panel size $m$ and
+fail to complete within a 5-minute budget once $m$ exceeds roughly 20--50
+strains, whereas \texttt{DEploid-BEST} completes in roughly 2--3 minutes
+regardless of panel size, including $m = 1000$ (Supplementary Table~S1).
 
-\section{Results and Discussion}
-In order to make the package more accessible and reduce the complexity of installation under different enviorment. We move stable and generalized code into C++ libraries, and build R and Python front-end to interact with the program. See supplementary materials for details.
-
-
-
+To make the package more accessible and to reduce the complexity of installation under different environments, we have moved the stable, generalised code into C++ libraries and built an R interface that allows users to interact directly with {\tt DEploid} results without saving them to text files and reloading them for analysis. See the Supplementary Material for details.
 
 \section*{Acknowledgements}
+We thank the Pf3k consortium for valuable insights.
+
+\section*{Funding}
 This work was supported by the Wellcome Trust grant [100956/Z/13/Z] to G.M.
-We thank the Pf3k consortium for valuable insights.\\
-\noindent {\it Conflict of Interest:} Software development and data analysis in this work was completed by S.J.Z. during postdoc at the BDI. S.J.Z. is a principal data scientist at Roche. There is no conflict of interest.
 
-
-\nocite{Zhu2017}
-\nocite{Zhu2019}
+\section*{Conflict of Interest}
+Software development and data analysis in this work was completed by S.J.Z. during a postdoc at the BDI. S.J.Z. is a principal data scientist at Roche. There is no conflict of interest.
 
 \bibliographystyle{natbib}
-%\bibliographystyle{achemnat}
-%\bibliographystyle{plainnat}
-%\bibliographystyle{abbrv}
-%\bibliographystyle{bioinformatics}
-%
-%\bibliographystyle{plain}
-%
 \bibliography{dbp}
 
 \end{document}

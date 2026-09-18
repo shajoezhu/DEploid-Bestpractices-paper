@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\caption{Supplementary Table S3. Field in-silico benchmark: per-site WSAF recovery.
+For 40 simulated mixtures (two field populations $\times$ five mosaic scenarios $\times$ four
+known proportion sets), each pipeline deconvolves the mixture and we correlate the
+recovered mixture allele frequency (WSAF) against the simulated truth, site by site.
+Means are over both populations and all four proportion sets; the range is in parentheses.
+{\tt DEploid-BEST} requires no strain number $K$ to be supplied.
+Settings: single seed, $nSample=500$, $rate=8$, matching the original field-benchmark
+fidelity (Table~S2 uses the same $nSample$ and $rate$).}
+\label{tab:field}
+\begin{tabular}{lccc}
+\hline
+Scenario & {\tt DEploid-BEST} & classic (fixed $K{=}4$) & {\tt DEploid-IBD} (fixed $K{=}4$) \\
+\hline
+1 & 0.990 (0.985--0.996) & 0.988 (0.984--0.992) & 0.990 (0.986--0.994)  \\
+2a & 0.988 (0.986--0.994) & 0.987 (0.980--0.993) & 0.985 (0.977--0.990) \\
+2b & 0.989 & 0.987 (0.982--0.993) & 0.988 (0.983--0.991) \\
+3 & 0.986 (0.983--0.992) & 0.985 (0.978--0.990) & 0.985 (0.979--0.990)  \\
+4 & 0.984 (0.980--0.989) & 0.983 (0.975--0.990) & 0.984 (0.978--0.991)  \\
+\hline
+\end{tabular}
+\end{table}

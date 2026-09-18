@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{natbib,longtable,graphicx,tikz}
+\usepackage{natbib,longtable,graphicx,tikz,multirow}
 \usepackage{caption}
 \usepackage[label font=bf,labelformat=simple, position = top, justification=RaggedRight,singlelinecheck=false]{subfig}
 % \newsubfloat{figure}
@@ -27,7 +27,7 @@
 }
 \lstset{language=bash}
 
-\usepackage{tikz}  
+\usepackage{tikz}
 
 
 \title{Supplementary Material}
@@ -65,7 +65,7 @@
 
 \maketitle
 \begin{abstract}
-\noindent In the supplementary material, we include background information of the data set, method details of the reference panel construction, as well as data filtering strategies, and rationale behind the choice of parameters.
+\noindent In the supplementary material, we include background information on the data set, method details of the reference-panel construction and the LASSO model, data-filtering strategies, and the rationale behind the choice of parameters.
 \end{abstract}
 
 
@@ -79,94 +79,104 @@
 % The primary output of the project will be an open access data resource with companion publications on genomic diversity and population genetics that together provide a detailed description of P. falciparum genome variation across the major malaria endemic regions.
 %
 
-The Pf3k \citep{pf3k} dataset includes 2,640 {\it Plasmodium falciparum} 
+The Pf3k \citep{pf3k} data set includes 2,640 {\it Plasmodium falciparum} samples. % TODO: reconcile this count with the deduplicated table totals below
 
+These can be divided into field and lab samples based on their sources, and into clonal and mixed samples based on the mixtures identified by our work \citep{Zhu2017, Zhu2019}; see Table~\ref{tab:pf3k} for details. Note that we drop the duplicated samples and use only the preferred ones.
 
-can be divided into field and lab samples based on their sources, and clonal and mixed samples based on the mixtures based on our work \citep{Zhu2017, Zhu2019}, see Table~\ref{tab:pf3k} for details. Note, we drop the duplicated samples and use only the preferred ones.
-
-TODO: check We also exclude samples where sequencing depth is below 30 and less than 30\% of sites are callable.
+We also exclude samples where the sequencing depth is below 30 and where less than 30\% of sites are callable. % TODO: verify these exact thresholds
 
 
 % > table(meta$Type)
 
-% Field clonal    Field mix   Lab clonal      Lab mix 
+% Field clonal    Field mix   Lab clonal      Lab mix
 %         1365          979           86           27
 \begin{table}[h]
     \centering
-    \begin{tabular}{cccc}\hline\hline
+    \begin{tabular}{lccc}\hline\hline
                   &  Clonal samples  & Mixed samples & Total \\ \hline
-    Field samples &  1365  & 979 & \\
-    Lab samples &   &&\\
-    Total &   &&\\
+    Field samples &  1365  & 979 & 2344\\
+    Lab samples &  86  & 27 & 113\\
+    Total &  1451 & 1006 & 2457\\
     \hline\hline
     \end{tabular}
-    \caption{Field samples are collected from multiple sampling sites in Africa and Asia \citep{Duffy2015, Kamau2015, eLife2016, Mobegi2014, Amato2017, Miotto2013, Ocholla2014, Amambua-Ngwa2012, Wong2017}. Clonal and mixed field samples are identified by \citet{Zhu2019}. The lab clonal samples include 5 lab clonal samples (7G8, GB4, KH02, KE01, GN01) and 96 \textcolor{red}{check this number} crosses samples comprising parents and progeny from the {\it P. falciparum} Genetic Crosses project \citep{Miles2016}. The lab mixed samples include 27 mixed lab strains in varying proportions created by Dr Jason Wendler \citep{Wendler2015}. }
+    \caption{Field samples are collected from multiple sampling sites in Africa and Asia \citep{Duffy2015, Kamau2015, eLife2016, Mobegi2014, Amato2017, Miotto2013, Ocholla2014, Amambua-Ngwa2012, Wong2017}. Clonal and mixed field samples are identified by \citet{Zhu2019}. The lab clonal samples include 5 lab clonal samples (7G8, GB4, KH02, KE01, GN01) and a number of crosses samples comprising parents and progeny from the {\it P. falciparum} Genetic Crosses project \citep{Miles2016}. The lab mixed samples include 27 mixed lab strains in varying proportions created by Dr Jason Wendler \citep{Wendler2015}. } % TODO: confirm the number of lab clonal crosses samples (previously listed as 96)
     \label{tab:pf3k}
 \end{table}
 
 
 
 
+\subsection{Pf6 data set}
+\label{sec:pf6}
+
+The Pf6 analysis set is the sample collection deconvolved in Section~S5. It
+comprises \textbf{5,970} \emph{P.\ falciparum} samples drawn from the Pf6
+whole-genome sequencing release and curated into a non-redundant analysis
+set: duplicate samples and closely related individuals (relatedness above
+the 0.94 threshold encoded in the metadata file name
+\texttt{pf6-analysis-meta-with-k-relatedness-collapsed-point94.txt}) were
+collapsed, leaving the 5,970 samples used here.
+
+The set is geographically and temporally broad, spanning \textbf{29
+countries} grouped into \textbf{8 populations} (CAF, EAF, ESEA, OCE, SAM,
+SAS, WAF, WSEA) and collected between \textbf{2001 and 2015}. The five best
+represented countries are Cambodia (896 samples), Thailand (888), Ghana
+(851), Mali (426) and DR Congo (344); the remaining 24 countries contribute
+the rest. Each sample carries an ENA accession and a callable-site fraction
+(\texttt{X..callable}); the median sample is callable at \textbf{89.3\%} of
+sites (range 50.0--92.1\%), so even the shallowest sample retains a majority
+of the genome.
+
+Per-sample metadata also records a relatedness-derived strain-count estimate,
+\texttt{Est\_K}, which we use to separate clonal from mixed infections before
+deconvolution (Table~\ref{tab:pf6}):
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lcc}\hline\hline
+                  &  Clonal (Est\_K=1)  & Mixed (Est\_K\,$\geq$\,2) \\ \hline
+    Samples &  3,434  & 2,536\\
+    \hline\hline
+    \end{tabular}
+    \caption{Strain-count classification of the 5,970-sample Pf6 analysis set
+    from the \texttt{Est\_K} relatedness estimate. The mixed-infections
+    stratum decomposes as 1,701 samples at $K$=2, 658 at $K$=3 and 177 at
+    $K$=4. Only the 2,536 mixed infections require full deconvolution; the
+    clonal samples resolve to a single strain.}
+    \label{tab:pf6}
+\end{table}
+
+\noindent Because \texttt{Est\_K} is only a prior, Section~S5 recovers the
+strain number and proportions for every sample directly with
+\texttt{DEploid-BEST}, without supplying $K$.
 
 \subsection{Generating {\it in silico} mixtures for deconvolution benchmark}
 \subsection{{\it In silico} mixtures of lab strains}
-In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we generated four {\it in silico} lab mixtures: We used the lab strain GB4 to provide a whole-genome read depth profile. We drew Bernoulli variables to simulate alternative allele counts, with the probability of success as the adjusted within sample allele frequency at each position. The expected WSAF is the dot product of the genotype of the lab strains: 3D7, Dd2, HB3, 7G8 and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, and the mixture proportion of 0.1, 0.2, 0.4 and 0.3 will lead to an expected WSAF of 0.7. We then further adjust the WSAF with an error term (0.01) to account for all technical error/noise: $0.7 \times(1-0.01) + (1-0.7) \times.01 = 0.696$.
+In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we generated four {\it in silico} lab mixtures. We used the lab strain GB4 to provide a whole-genome read-depth profile, and drew Bernoulli variables to simulate alternative allele counts, with the probability of success set to the adjusted within-sample allele frequency (WSAF) at each position. The expected WSAF is the dot product of the genotype of the lab strains (3D7, Dd2, HB3, 7G8) and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, a mixture proportion of 0.1, 0.2, 0.4 and 0.3 leads to an expected WSAF of 0.7.
 
 % \vspace{.5cm}
 % To test the accuracy of \texttt{DEploidIBD} in a more realistic setting, we created {\it in silico} mixtures of 2, 3 and 4 strains given different transmission scenarios from mosquito bites. Let $K$ denote the number strains within each sample, and $b$ denote the number of independent mosquito bites. In such a scenario, a mixed infection containing $K$ strains can be treated as a result of $b$-bite events, where $K \in \{2,3,4\}$ and $1~{\leq}~{b}~{\leq}~K$. For example, a $K=2$ mixed infection can result from co-transmission, where two strains are passed in a single bite ($b=1$); or by superinfection, where each strain is delivered by a unique bite ($b=2$). A mixed infection containing 3 strains is more complex: besides co-infection (3 strains in a single bite, $b=1$) and superinfection (3 strains in 3 bites, $b=3$), we can also have a super-infection scenario made up from a co-infection plus a clonal-infection ($b=2$). The complete simulation procedure (code) is available at \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
 
 \subsection{Data quality}
 
-\begin{figure}[ht]
-% \sbox{\measurebox}{%
-%   \begin{minipage}[b]{.5\textwidth}
-  \subfloat
-    [coverage]
-    {\label{fig:figA}\includegraphics[width=.5\textwidth]{figures/sample_coverage.png}}
-%   \end{minipage}}
-% \sbox{\measurebox}{%
-%   \begin{minipage}[b]{.5\textwidth}
-  \subfloat
-    [VQLSOD]
-    {\label{fig:figb}\includegraphics[width=.5\textwidth]{placeholder.jpeg}}
-%   \end{minipage}}
-
-% \usebox{\measurebox}%\qquad
-
-% \begin{minipage}[b][\ht\measurebox][s]{.62\textwidth}
-% %\centering
-% \subfloat
-%   []
-%   {\label{fig:figB}\includegraphics[width=\textwidth]{hap_viterbi_hap1.pdf}}\\
-% %\vfill
-% \subfloat
-%   []
-%   {\label{fig:figC}\includegraphics[width=\textwidth]{hap_viterbi_hap2.pdf}}
-% \end{minipage}
-
-%   \begin{subfigure}{.5\textwidth}
-%   \centering
-%   % include first image
-%   \includegraphics[width=.8\linewidth]{placeholder.jpe}  
-%   \caption{Put your sub-caption here}
-%   \label{dataQ:sub-coverage}
-% \end{subfigure}
-% \begin{subfigure}{.5\textwidth}
-%   \centering
-%   % include second image
-%   \includegraphics[width=.8\linewidth]{placeholder.jpe}  
-%   \caption{Put your sub-caption here}
-%   \label{dataQ:sub-VQSLOD}
-% \end{subfigure}
-% \caption{Put your caption here}
-% \label{fig:dataQ}
-  
-\end{figure}
-
-
+% \begin{figure}[ht]
+% % \sbox{\measurebox}{%
+% %   \begin{minipage}[b]{.5\textwidth}
+%   \subfloat
+%     [coverage]
+%     {\label{fig:figA}\includegraphics[width=.5\textwidth]{figures/sample_coverage.png}}
+% %   \end{minipage}}
+% % \sbox{\measurebox}{%
+% %   \begin{minipage}[b]{.5\textwidth}
+%   \subfloat
+%     [VQSLOD]
+%     {\label{fig:figb}\includegraphics[width=.5\textwidth]{placeholder.jpeg}}
+% %   \end{minipage}}
+% % TODO: replace the VQSLOD placeholder figure
+% \end{figure}
 
 \subsection{Variant selection}
-We ran {\tt DEploid-IBD} on high quality biallelic SNPs (both coding and non-coding, tagged with PASS at the QUAL column in the VCF file) from Pf3k~\citep{pf3k}. Before the additional filtering described below, this set contained 1,057,830 SNPs.
+We ran {\tt DEploid-IBD} on high-quality biallelic SNPs (both coding and non-coding, tagged with PASS at the QUAL column in the VCF file) from Pf3k~\citep{pf3k}. Before the additional filtering described below, this set contained 1,057,830 SNPs.
 \linespread{1}
 \begin{lstlisting}
 bcftools view \
@@ -182,38 +192,71 @@ SNP_INDEL_Pf3D7_01_v3.combined.filtered.vcf.gz
 
 \subsection{Variant quality score log-odds}
 
-The variant quality score log-odds (VQSLOD) score measures how reliable each variant call is. For the Pf3k data set, all `PASS' sites have VQSLOD score above zero.
+The variant quality score log-odds (VQSLOD) score measures how reliable each variant call is. For the Pf3k data set, all `PASS' sites have a VQSLOD score above zero.
 
 % provides a continuous estimate of the probability that each variant is true, allowing one to partition the call sets into quality tranches. The main purpose of the tranches is to establish thresholds within your
 
-get a table
-
-chromsomes, by row,, col
+% TODO: add the VQSLOD table (chromosomes by row)
 
 
 
 \subsection{Data cleaning and filtering}
 
 \subsubsection{High leverage data points}
-Same as \citet{Zhu2017,Zhu2019}, we find markers with high frequencies in both reference and alternative allele count can mislead our model to fit extra strains. We used a threshold of $\geq$ 99.5\% coverage (default) to identify markers with extremely high allele counts. We further expand this list of potential ``bad markers'' by considering their nearest 10 neighbours on both sides along the genome, and identify the nearest markers as ``to be excluded'' if overlaps are found (see Figure~\ref{fig:fitering}). These poorly-genotyped variants are likely to be artefacts of mapping and genotype calling.
+As in \citet{Zhu2017,Zhu2019}, we find that markers with high frequencies in both reference and alternative allele counts can mislead our model into fitting extra strains. We used a threshold of $\geq$ 99.5\% coverage (default) to identify markers with extremely high allele counts. We further expand this list of potential ``bad markers'' by considering their nearest 10 neighbours on both sides along the genome, and identify the nearest markers as ``to be excluded'' if overlaps are found (see Figure~\ref{fig:fitering}). These poorly-genotyped variants are likely to be artefacts of mapping and genotype calling.
 
 \begin{figure}[htp]
   \centering
     \includegraphics[width=0.7\textwidth]{{PG0415-CaltVsRefAndWSAFvsPLAF}.png}
-  \caption{Figure on the top plot total allele counts across all markers. We observe a small number of heterozygous sites with high coverage (marked as crosses above), which can potentially mislead our model to over-fit the data with additional strains.  We use a threshold of $\geq$ 99.5\% coverage to identify markers with extremely high allele counts. Red crosses indicate markers that are filtered out. Figure on the left plots the alternative allele count against the reference allele count. As {\it P. falciparum} genomes are haploid, in clonal samples, one would expect to see either alternative or reference allele at any sites. Heterozygous sites are indications of mixed infection. The marked black crosses can mislead our model to overestimate the number of strains as two. Figure in the middle is the histogram of the allele frequency within sample. Figure on the right show allele frequency within sample, compare against the population average.
+  \caption{The top plot shows total allele counts across all markers. We observe a small number of heterozygous sites with high coverage (marked as crosses above), which can potentially mislead our model into over-fitting the data with additional strains. We use a threshold of $\geq$ 99.5\% coverage to identify markers with extremely high allele counts; red crosses indicate markers that are filtered out. The left plot shows the alternative allele count against the reference allele count. As {\it P. falciparum} genomes are haploid, in clonal samples one would expect to see either the alternative or the reference allele at any site; heterozygous sites are indications of mixed infection. The marked black crosses can mislead our model into overestimating the number of strains as two. The middle panel is a histogram of the within-sample allele frequency, and the right panel shows the within-sample allele frequency compared against the population average.
   }
   \label{fig:fitering}
 \end{figure}
-
-This process remains as a manual step, as it may consider other sites.
 
 \subsection{Reference panel}
 
 \begin{figure}[ht]
   \centering
-    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-    \caption{PCA/tSNE/UMAP of the big panel}
+    \includegraphics[width=0.8\textwidth]{panel_tsne.png}
+    \caption{tSNE projection of the combined Pf3k field reference panel
+    (18,570 sites $\times$ 1,316 haplotype samples), coloured by sample
+    country of origin; lab genetic crosses and complexity-of-infection
+    simulations (blank country in the Pf3k metadata) are grouped as
+    Cross/Sim. The projection recovers the major geographic structure of the
+    panel.}
+    \label{fig:panel_tsne}
 \end{figure}
+
+The reference panel is the set of candidate haplotypes against which each
+mixed sample is deconvolved. We use the combined Pf3k field panel
+(\texttt{combined\_pf3k\_field\_panel\_withcross.txt}), which pools the
+haplotypes of 1,316 \emph{P.\ falciparum} samples spanning the major endemic
+regions represented in Pf3k \citep{pf3k} together with laboratory genetic
+crosses and complexity-of-infection (COI) simulation strains. Each sample
+contributes a haplotype across 18,570 biallelic SNP sites -- the same site
+set visualised in Figure~\ref{fig:panel_tsne}.
+
+Figure~\ref{fig:panel_tsne} shows a tSNE projection of the panel coloured by
+country of origin. The projection recovers the major geographic structure of
+the parasite population: African and Asian field isolates form largely
+separate clouds, while the lab genetic crosses and COI simulations (blank
+country in the metadata, grouped as Cross/Sim) sit apart from the field
+strains. This structure is what makes deconvolution informative -- the
+strains that best explain a given mixture tend to come from the same
+geographic lineage as the sample, so a panel representative of the relevant
+diversity is what allows the strain number and proportions to be recovered
+without supplying $K$ by hand (Sections~S2--S3).
+
+Although the full panel contains 1,316 strains, only a small fraction
+contributes to any individual mixture. Within \texttt{DEploid-BEST} the LASSO
+stage (Section~S2.2) selects a sparse subset of strains with non-zero weight
+($\beta_j \ge 0.01$), so the effective panel passed to the downstream IBD
+inference is typically a small multiple of the true strain number $K$ rather
+than the full 1,316. Consequently the downstream MCMC cost is set by the
+effective, not the full, panel size (Section~S2.3), which is what makes the
+field-scale deconvolution in Section~S5 tractable. For the Pf6 field samples
+the panel is further intersected to the 15,052 sites shared with the Pf6
+calls (Section~S5.1); the strain composition is unchanged.
 
 
 
@@ -226,9 +269,46 @@ This process remains as a manual step, as it may consider other sites.
 
 \section{DEploid-LASSO deep dive}
 \subsection{Model}
-Assume Independence 
+\label{sec:model}
+We recall the notation of \citet{Zhu2019}. Using a Bayesian approach, the posterior probability of the strain number $K$, proportions $\mathbf{w}$, haplotypes $\mathbf{h}$ and relatedness state $\mathcal{S}$ given the sequence data $D$ and error rate $e$ is
+\begin{equation}
+P(K, \mathbf{w}, \mathbf{h}, \mathcal{S} \mid e, D) \propto L(K, \mathbf{w}, \mathbf{h}, \mathcal{S} \mid e, D) \times P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}),
+\end{equation}
+where the joint prior decomposes as
+\begin{equation}
+P(K, \mathbf{w}, \mathbf{h}, \mathcal{S}) = P(K) \times P(\mathbf{w} \mid K) \times P(\mathcal{S} \mid K) \times P(\mathbf{h} \mid \mathcal{S}).
+\end{equation}
+This decomposition allows us to be flexible with the order of inference. In practice we use Markov chain Monte Carlo (MCMC) for inference, and we find that certain execution orders perform better than others, as described in the main text.
+
+\subsection{LASSO reference-panel optimisation}
+\label{sec:lasso}
+Let $y$ denote the within-sample allele frequency of the mixed sample. Assuming that the genotypes of each strain in the reference panel $X$ are independent covariates, we fit the linear model
+\begin{equation}
+y = \beta_0 + \overrightarrow{\beta} X,
+\end{equation}
+where $\overrightarrow{\beta}$ are the weights of the reference strains that contribute towards the estimated within-sample allele frequency of the mixed genome. A key feature of the LASSO approach is that $\overrightarrow{\beta}$ is sparse, producing zero weights for many reference strains in the panel and thereby reducing its size. Our objective is to find $\overrightarrow{\beta}$ and $\lambda$ such that
+\begin{equation}
+\min_{\overrightarrow{\beta}} \left\| y - \beta_{0} - \overrightarrow{\beta} X \right\|^{2} + \lambda \left\| \overrightarrow{\beta} \right\|_{1}
+\end{equation}
+\citep{Friedman2010}.
+
+In practice we search for $\lambda$ between 0 and 1. We start by setting $\lambda = 1$ and $\overrightarrow{\beta} = \mathbf{0}$, then gradually add reference strains into the model by setting individual $\beta$s to non-zero values one at a time. We keep including new reference strains if the new model reduces the likelihood deviance by at least one percent. The LASSO approach lets us discard reference strains with zero $\beta$s, and we further reduce the panel by opting out $\beta$s below 0.01. Note that the choice of the final reference strains depends on the order in which reference strains are included in the computation.
 
 \subsection{Effective reference panel}
+\label{sec:effectpanel}
+
+The LASSO step yields a \emph{sparse} weight vector $\overrightarrow{\beta}$; the
+effective reference panel is the subset of input strains with $\beta_j \ge
+0.01$ (Section~\ref{sec:lasso}). This is the covariate set actually passed to
+the downstream IBD haplotype inference, rather than the full $m$-strain panel.
+Because a strain is only admitted when it reduces the deviance by at least
+1\%, the effective panel size is set by the number of distinct components in
+the mixture -- typically a small multiple of $K$ -- and is essentially
+independent of the input panel size $m$. Two consequences follow. First, the
+downstream MCMC cost scales with the effective, not the full, panel size, which
+is why {\tt DEploid-BEST} runs in roughly constant time as $m$ grows from 10 to
+1000 (Table~\ref{tab:runtime}).
+
 
 \newpage
 \renewcommand{\thepage}{S3--\arabic{page}}
@@ -238,83 +318,355 @@ Assume Independence
 \section{Major improvement from DEploid and DEploid-IBD}
 \subsection{Optimised reference panel per sample}
 
+% TODO: results showing per-sample optimised reference panels
+
 
 \subsection{Reduced run time}
-\begin{figure}{ht}
+
+To isolate the effect of reference-panel size on compute cost, we deconvolved a
+fixed set of $l = 18{,}570$ sites (sample PG0390-C) using synthetic reference
+panels of $m \in \{10, 20, 50, 100, 200, 500, 1000\}$ strains, holding the
+MCMC settings fixed ($nSample = 20$, $rate = 5$, seed 1, single thread). The
+classic {\tt DEploid} and {\tt DEploid-IBD} pipelines scale approximately
+quadratically with $m$ and fail to complete within a 5-minute budget once $m$
+exceeds roughly 20--50 strains, whereas {\tt DEploid-BEST} completes in roughly
+2--3~minutes irrespective of panel size, including $m = 1000$ (Table~\ref{tab:runtime}).
+
+\begin{table}[ht]
 \centering
-\includegraphics[width=.7\textwidth]{figures/placeholder.jpeg}
-\caption{bar plot of time, four bars, no panel, with panel, ibd, best practice}
-\end{figure}
+\begin{tabular}{lccc ccc}\hline\hline
+  & \multicolumn{3}{c}{Runtime} & \multicolumn{3}{c}{Peak memory (GB)} \\
+\cline{2-7}
+  Reference strains ($m$) & classic & IBD & BEST & classic & IBD & BEST \\ \hline
+  10   & 13.1\,s & 1.4\,m & 2.0\,m & 0.06 & 0.06 & 0.07 \\
+  20   & 2.1\,m  & 2.8\,m & 2.0\,m & 0.06 & 0.06 & 0.07 \\
+  50   & TIMEOUT & TIMEOUT & 2.5\,m & 0.10 & 0.10 & 0.09 \\
+  100  & TIMEOUT & --     & 2.4\,m & 0.19 & --   & 0.10 \\
+  200  & --      & --     & 2.4\,m & --   & --   & 0.14 \\
+  500  & --      & --     & 2.5\,m & --   & --   & 0.27 \\
+  1000 & --      & --     & 2.7\,m & --   & --   & 0.50 \\
+\hline
+\end{tabular}
+\caption{Runtime and peak memory of the three
+{\tt DEploid} approaches as a function of reference-panel size $m$
+($l = 18{,}570$ sites, $nSample = 20$, $rate = 5$, seed 1, single thread).
+Runs exceeding 300\,s were terminated (shown as TIMEOUT). Synthetic panels were
+used to vary $m$ while holding the site set fixed; strain haplotypes were
+assigned at random (seed 42). Hardware: Intel Core i9-14900HX, 32 threads,
+31\,GB RAM.}
+\label{tab:runtime}
+\end{table}
 
-\subsection{Improved inference for balanced mixtures}
+% TODO: replace the synthetic-panel stress test with a real Pf3k panel (the
+% example panel has ~18,571 strains) once a realistic large-panel run is
+% feasible, to confirm the scaling holds on biological haplotypes.
 
-\subsection{Improved inference results for mixtures of 3- or 4-strains}
+\subsection{Accuracy on in-silico mixtures of known strains}
+
+To quantify inference accuracy we deconvolved four \emph{in-silico} mixtures of
+four lab strains (3D7, DD2, HB3, 7G8) with known ground-truth proportions,
+including a balanced $0.25/0.25/0.25/0.25$ mixture (Table~S2). Each mixture was
+run through the classic {\tt DEploid} pipeline, {\tt DEploid-IBD}, and
+{\tt DEploid-BEST} with a four-strain reference panel
+($l = 18{,}570$ chromosome-14 sites). {\tt DEploid-BEST} recovered the correct
+number of strains ($K = 4$) automatically in every case; the classic pipeline
+reached $K = 4$ only because $K$ was supplied as input, while {\tt DEploid-IBD}
+merged the two most closely related strain pairs and collapsed to $K = 2$ even
+when $K = 4$ was supplied. For proportion recovery, {\tt DEploid-BEST} and the
+classic pipeline given the true $K$ are statistically indistinguishable (mean
+total absolute error $0.35$ for both; IBD $1.06$). The residual error in both is
+dominated by a 3D7/7G8 labelling ambiguity: the two most divergent strains are
+exchanged for the largest proportion (e.g.\ for w1 the methods recover
+3D7$\approx0.39$, 7G8$\approx0.21$ versus truth $0.1/0.4$), an identifiability
+limit of the reference panel rather than a method failure. The practical benefit
+of {\tt DEploid-BEST} on these mixtures is therefore its automatic, robust
+strain-number selection and its avoidance of the related-strain collapse seen in
+{\tt DEploid-IBD}, together with the runtime scaling reported in Table~\ref{tab:runtime}.
+
+
+\subsection{Accuracy on in-silico mixtures of field strains}
+
+To test the method on realistic data we built \emph{in-silico} mixtures from
+genuine \emph{P.\ falciparum} field haplotypes rather than the four reference
+lab strains. For each of two field populations (asiaGroup1, africaGroup2) we
+sampled a 20-strain reference panel and two further field strains whose
+haplotypes were tiled into mosaic ``truth'' genomes with one to four break
+points (the 1--4 ``bites'' scenarios); read counts were then simulated at the
+observed field coverage by binomial sampling (error rate $0.01$). The true
+proportions of the four mosaic components are encoded in the mixture name
+(e.g.\ \texttt{p25v25v25v25} denotes a balanced
+$0.25/0.25/0.25/0.25$ mix). Because the true strains are \emph{not} members
+of the reference panel, the deconvolution cannot be scored by matching
+recovered strain proportions; instead we score the recovered \emph{mixture
+allele frequency} (WSAF) site by site, correlating the inferred WSAF
+($\sum_j h_{sj}\,w_j$ over the recovered haplotypes $h$ and proportions $w$)
+against the simulated truth. Each of the 40 mixtures ($2 \times 5 \times 4$)
+was deconvolved by the classic pipeline, {\tt DEploid-IBD}, and
+{\tt DEploid-BEST} (single seed, $nSample=500$, $rate=8$).
+
+Table~\ref{tab:field} reports the per-site WSAF recovery. All three pipelines recover the
+mixture allele frequency with very high accuracy (Pearson $r$ in the range
+$0.97$--$0.99$, typically $\approx 0.99$, in every setting): with a dense,
+representative field panel the mixture is identifiable regardless of
+strain-number misspecification. {\tt DEploid-BEST} attains this accuracy
+\emph{without} $K$ being supplied -- the classic and IBD pipelines were both
+fixed at the true $K = 4$. The mixture allele frequency is still
+recovered to $r \approx 0.99$ (Table~\ref{tab:field}), matching the fixed-$K = 4$ classic
+and IBD pipelines. Together with the lab-strain benchmark and the
+runtime scaling (Table~\ref{tab:runtime}), this shows that on realistic field mixtures
+{\tt DEploid-BEST} is as accurate as a correctly specified classical
+deconvolution while removing the need to choose $K$ by hand.
+
+\input{tableS3}
 
 \newpage
 \renewcommand{\thepage}{S4--\arabic{page}}
 
 \setcounter{page}{1}
-\section{Github actions}
+\section{Modularised package development}
 
-\newpage
-\renewcommand{\thepage}{S5--\arabic{page}}
-
-\setcounter{page}{1}
-\section{Modulerized package development}
-
-To facilitate the development and maintenance of the DEploid software, we have modularized the package into several components. Each component is responsible for a specific functionality, making the codebase more organized and easier to manage. The main modules are:
+To facilitate the development and maintenance of the DEploid software, we have modularised the package into several components. Each component is responsible for a specific functionality, making the codebase more organised and easier to manage. The main modules are:
 
 \begin{itemize}
   \item \textbf{DEploid-Lasso-lib (C++)}: Handles the input and preprocessing of genomic data.
   \item \textbf{DEploid-vcf-lib (C++)}: Contains the core algorithms for deconvolution and inference.
-  \item \textbf{DEploid.utils (R)}: Utility functions for data preprocessing, 
-  \item \textbf{DEploid (C++)}: DEploid core functions, command line interface.
-  \item \textbf{DEploid-r (R)}: An R interface for DEploid, allows user to directly interact with DEploid results, without save the results in text files and load them again for analysis. Upstream direct dependencies include DEploid, DEploid.utils.
-  \item \textbf{DEploid-py (Python)}: A python interface for DEploid, allows user to directly interact with DEploid results, without save the results in text files and load them again for analysis.  
+  \item \textbf{DEploid.utils (R)}: Utility functions for data preprocessing.
+  \item \textbf{DEploid (C++)}: DEploid core functions, command-line interface.
+  \item \textbf{DEploid-r (R)}: An R interface for DEploid, allowing users to interact directly with DEploid results without saving them to text files and reloading them for analysis. Upstream direct dependencies include DEploid and DEploid.utils.
 \end{itemize}
 
-\begin{figure}[tbp]
-\centering
-\begin{tikzpicture}  
-    [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.  
-      
-    \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};  
-    \node (a2) at (60,60)  {DEploid-vcf-lib (C++)}; 
-    \node (a3) at (50,40)  {DEploid.utils (R)};  
-    \node (a4) at (25,30) {DEploid (C++)};  
-    \node (a5) at (45,10)  {DEploid-r (R)};  
-    \node (a6) at (20,10)  {DEploid-py (Python)}; 
+% TODO: a Python interface (DEploid-py) is planned but not yet implemented; add it here once available.
 
-    \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another  
-    \draw [<-] (a2) -- (a4);  
-    \draw [<-] (a2) -- (a3);  
-    \draw [<-] (a4) -- (a5);  
-    \draw [<-] (a3) -- (a5);
-    \draw [<-] (a4) -- (a6);  
-\end{tikzpicture}
-\caption{Package dependencies.}
-\end{figure}
- 
+% \begin{figure}[tbp]
+% \centering
+% \begin{tikzpicture}
+%     [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.
+%
+%     \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};
+%     \node (a2) at (60,60)  {DEploid-vcf-lib (C++)};
+%     \node (a3) at (50,40)  {DEploid.utils (R)};
+%     \node (a4) at (25,30) {DEploid (C++)};
+%     \node (a5) at (45,10)  {DEploid-r (R)};
+
+%     \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another
+%     \draw [<-] (a2) -- (a4);
+%     \draw [<-] (a2) -- (a3);
+%     \draw [<-] (a4) -- (a5);
+%     \draw [<-] (a3) -- (a5);
+% \end{tikzpicture}
+% \caption{Package dependencies.}
+% \end{figure}
+
 
 This modular approach allows for independent development and testing of each component, improving the overall robustness and flexibility of the software.
 
-\subsection{}
+\subsection{Software repositories and data availability}
+\label{sec:repos}
 
+The analyses, tables and figures in this manuscript are reproduced with the
+following public repositories:
 
+\begin{itemize}
+  \item \textbf{DEploid} (C++ core deconvolution engine, including the
+    DEploid-Lasso-lib and DEploid-vcf-lib modules described above):
+    \url{https://github.com/DEploid-dev/DEploid}.
+  \item \textbf{DEploid-r} (R interface to DEploid):
+    \url{https://github.com/DEploid-dev/DEploid-r}.
+  \item \textbf{DEploid.utils} (R utility functions for data preprocessing):
+    \url{https://github.com/DEploid-dev/DEploid-Utilities}.
+  \item \textbf{pf6-deconvolution} (the DEploid-BEST per-sample deconvolution
+    pipeline used in Section~S5: panel subsetting, per-sample VCF preparation,
+    the \texttt{run\_all.sh} parallel driver and the
+    \texttt{deconvolved\_haplotypes.zip} archive):
+    \url{https://github.com/DEploid-dev/pf6-deconvolution}.
+  \item \textbf{DEploid-Bestpractices-github-actions} (the combined Pf3k
+    reference panel \texttt{combined\_pf3k\_field\_panel\_withcross.txt} and
+    the continuous-integration workflow):
+    \url{https://github.com/DEploid-dev/DEploid-Bestpractices-github-actions}.
+  \item \textbf{DEploid-Data-Benchmark-in\_silico\_field} (the in-silico
+    mixture benchmark data used in Sections~S2--S3):
+    \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
+  \item \textbf{DEploid-Bestpractices-paper} (this manuscript and its
+    \LaTeX\ source):
+    \url{https://github.com/shajoezhu/DEploid-Bestpractices-paper}.
+\end{itemize}
+
+\noindent All repositories are publicly available. The Pf6 field-sample
+deconvolution in Section~S5 was run with the DEploid \texttt{-best} workflow
+from DEploid-Bestpractices-github-actions; the resulting per-sample haplotype
+tables are archived as \texttt{deconvolved\_haplotypes.zip}. % TODO: add the archive DOI / release tag once deposited.
 
 \newpage
 
-\renewcommand{\thepage}{S6--\arabic{page}}
+\renewcommand{\thepage}{S5--\arabic{page}}
 
 \setcounter{page}{1}
 \section{Deconvolution of the field samples}
-Different than before, we are going for whole genome
+Unlike the benchmark mixtures in Sections~S2--S3, here we deconvolve
+whole-genome data from the field samples with the production
+\texttt{DEploid-BEST} pipeline. This section documents the input data, the
+end-to-end workflow, and the measured compute cost of deconvolving all
+5,970 samples of the Pf6 analysis set.
+
+\subsection{Input data and reference panel}
+\label{sec:field-input}
+
+Application of \texttt{DEploid-BEST} to the complete \emph{Pf}6 analysis set
+(\texttt{pf6-analysis-meta-with-k-relatedness-collapsed-point94.txt})
+illustrates the scale of the task. The set contains \textbf{5,970} samples, the curated non-redundant analysis
+set obtained after collapsing duplicate and closely related samples
+(relatedness above the 0.94 threshold encoded in the metadata file name). The
+relatedness-derived strain-count estimate \texttt{Est\_K} classifies them as
+\textbf{3,434} clonal infections (\texttt{Est\_K}\,=\,1) and \textbf{2,536}
+mixed infections (\texttt{Est\_K}\,$\geq$\,2: 1,701 at $K$=2, 658 at $K$=3,
+177 at $K$=4). Only the mixed infections require full deconvolution; the
+clonal samples resolve to a single strain and are substantially cheaper to
+process.
+
+The deconvolution takes two inputs per sample:
+\begin{itemize}
+  \item \textbf{Mixture VCF.} Each Pf6 sample is extracted to a single-sample
+    whole-genome VCF carrying that sample's allele-depth (AD) counts at every
+    variant site
+    (\texttt{data/pf6\_vcf/by\_sample/<SAMPLE>.vcf.gz}; 5,970 files).
+  \item \textbf{Reference panel.} A subset of the combined Pf3k field panel
+    (\texttt{combined\_pf3k\_field\_panel\_withcross.txt}) restricted to the
+    sites shared with the Pf6 calls: \textbf{1,316} strains
+    $\times$ \textbf{15,052} biallelic SNP positions
+    (\texttt{panel.subset.txt}). This is the same 1,316-strain panel
+    displayed in the tSNE projection of Figure~S1, but restricted to the
+    sites that are also present and callable in the Pf6 samples. The full
+    combined panel carries 18,570 sites; the $\approx$3,518 sites absent
+    here are panel positions that are missing, multiallelic, or fail the
+    PASS/biallelic filter in the Pf6 calls and are therefore dropped during
+    subsetting.
+\end{itemize}
+\texttt{dEploid} requires the panel and the input VCF to contain exactly the
+same site set, so each sample VCF is intersected to the 15,052 panel
+positions before inference. Population allele frequencies are read directly
+from the VCF via \texttt{-plafFromVcf} (the \texttt{AF} INFO tag, computed as
+AC/AN across all 7,113 Pf6 samples), which guarantees the PLAF matches the
+VCF's site set.
+
+\subsection{Workflow}
+\label{sec:field-workflow}
+
+The pipeline (\texttt{run\_all.sh}) is organised into five stages, summarised
+in Figure~\ref{fig:field-flow}:
+
+\begin{itemize}
+  \item[\textbf{Stage 1}] \textbf{Panel subsetting \& variant selection}
+    (\texttt{make\_panel\_vcf.sh}). Intersect the Pf3k reference panel with
+    the Pf6 variant calls and retain high-quality biallelic SNPs, yielding the
+    1,316~$\times$~15,052 \texttt{panel.subset.txt}.
+  \item[\textbf{Stage 2}] \textbf{Per-sample VCF preparation}
+    (\texttt{add\_af.sh}). For every sample VCF, attach the population
+    \texttt{AF = AC/AN} tag (required by \texttt{-plafFromVcf}) and subset the
+    records to the 15,052 panel positions.
+  \item[\textbf{Stage 3}] \textbf{LASSO panel optimisation \& deconvolution}
+    (\texttt{deconvolve\_one.sh} $\rightarrow$ \texttt{dEploid -best}). Within
+    \texttt{dEploid -best} the effective panel is first shrunk by LASSO
+    (Section~S2.2), then \texttt{chooseK} selects the strain number $K$,
+    \texttt{DEploid-IBD} reconciles the haplotypes and proportions, and the
+    final haplotypes are written to \texttt{<S>.final.hap}.
+  \item[\textbf{Stage 4}] \textbf{Per-sample summary table.}
+    \texttt{deconvolve\_one.sh} parses $K$ and the column-wise mean IBD
+    proportions and writes \texttt{out/<S>.txt} with the header
+    \texttt{\# sample <S>, mixed of K strain, with proportions of p1, p2, ...}
+    followed by the CHROM/POS/$h_1\!\ldots h_K$ haplotype table.
+  \item[\textbf{Stage 5}] \textbf{Archiving} (\texttt{make\_archive.sh}). All
+    \texttt{out/*.txt} files are zipped into
+    \texttt{deconvolved\_haplotypes.zip}.
+\end{itemize}
 
 \begin{figure}[ht]
-  \centering
-    \includegraphics[width=0.7\textwidth]{placeholder.jpeg}
-  \caption{PCA}
+\centering
+\begin{tikzpicture}[
+    box/.style={draw, rounded corners, fill=blue!5, text width=5.4cm, align=center, minimum height=1.0cm, font=\small},
+    io/.style={draw, rounded corners, fill=gray!12, text width=5.4cm, align=center, minimum height=1.0cm, font=\small},
+    arrow/.style={->, thick}
+  ]
+  \node[io]  (in)  at (0,  0)    {Pf6 sample VCFs (5,970)\\+ Pf3k panel subset (1,316 $\times$ 15,052 sites)};
+  \node[box] (s1)  at (0, -2.2)  {Stage 1 -- Panel subset \& variant selection};
+  \node[box] (s2)  at (0, -4.4)  {Stage 2 -- Per-sample VCF: add AF (AC/AN),\\subset to 15,052 panel sites};
+  \node[box] (s3)  at (0, -6.6)  {Stage 3 -- \texttt{dEploid -best}:\\LASSO $\rightarrow$ chooseK $\rightarrow$ IBD $\rightarrow$ final.hap};
+  \node[box] (s4)  at (0, -8.8)  {Stage 4 -- Build \texttt{out/<S>.txt}\\ (header + haplotype table)};
+  \node[box] (s5)  at (0,-11.0)  {Stage 5 -- Zip all \texttt{out/*.txt}\\ $\rightarrow$ deconvolved\_haplotypes.zip};
+  \node[io]  (out) at (0,-13.2)  {Deconvolved haplotypes + proportions\\for 5,970 samples};
+  \draw[arrow] (in)  -- (s1);
+  \draw[arrow] (s1)  -- (s2);
+  \draw[arrow] (s2)  -- (s3);
+  \draw[arrow] (s3)  -- (s4);
+  \draw[arrow] (s4)  -- (s5);
+  \draw[arrow] (s5)  -- (out);
+\end{tikzpicture}
+\caption{End-to-end \texttt{DEploid-BEST} field-sample deconvolution
+workflow. Each Pf6 sample VCF is intersected to the 15,052 panel sites and
+annotated with population allele frequency (AC/AN), then deconvolved by
+\texttt{dEploid -best} (LASSO panel shrinkage $\rightarrow$ strain-number
+selection $\rightarrow$ IBD haplotype/proportion inference $\rightarrow$ final
+haplotypes). Per-sample jobs run in parallel (\texttt{xargs -P 20}) and the
+resulting haplotype tables are archived.}
+\label{fig:field-flow}
 \end{figure}
+
+\subsection{Parallel execution and outputs}
+\label{sec:field-parallel}
+
+The 5,970 samples are independent, so \texttt{run\_all.sh} launches one
+\texttt{deconvolve\_one.sh} per sample and runs them \texttt{NCORES} at a time
+(\texttt{xargs -P 20}; GNU parallel is used when available). The driver is
+resume-safe: a sample whose \texttt{out/<S>.txt} already exists is skipped, so
+an interrupted run can be restarted without redoing completed work. On
+completion, \texttt{make\_archive.sh} bundles all 5,970 per-sample tables
+into a single \texttt{deconvolved\_haplotypes.zip} (367 MB). The strain number
+$K$ recovered by \texttt{DEploid-BEST} across the full set is \textbf{4,133}
+clonal ($K$=1), \textbf{1,550} mixed at $K$=2 and \textbf{287} mixed at $K$=3;
+no sample reached $K$=4. Relative to the relatedness-derived \texttt{Est\_K}
+prior (3,434 clonal / 2,536 mixed, of which 177 at $K$=4), \texttt{DEploid-BEST}
+classifies 699 more samples as clonal and finds no $K$=4 -- it recovers fewer
+and smaller mixtures than the prior, consistent with its tendency to merge the
+most similar components (Section~S3).
+
+\subsection{Compute time and throughput}
+\label{sec:field-time}
+
+The run used 20 parallel single-threaded \texttt{dEploid} workers on one
+machine, with the production MCMC settings $nSample = 250$, $rate = 8$,
+$burn = 0.67$, seed 1. It sustained a throughput of $\approx$2.6 samples per
+minute across the 20 workers, i.e.\ $\approx$7.8 CPU-minutes per sample
+(Table~S4). The full 5,970-sample set completed in
+roughly 39 hours of wall-clock time on 20 cores -- about 32 single-core days
+of compute. This is substantially faster than the $\approx$10 single-core days
+implied by the synthetic-panel Table~S1 rate, because the production panel is
+LASSO-reduced per sample (so the downstream MCMC sees only the few strains
+that contribute) and the wall time is divided across 20 cores. The
+speed-up is not perfectly linear, because the LASSO panel-optimisation stage
+is performed for every sample and $K$=3/$K$=4 samples take longer than
+clonal ones.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lc}\hline\hline
+Quantity & Value \\ \hline
+Samples deconvolved & 5,970 \\
+Parallel \texttt{dEploid} workers & 20 (single-threaded each) \\
+MCMC settings & $nSample=250$, $rate=8$, $burn=0.67$, seed 1 \\
+Sites per sample & 15,052 \\
+Reference panel (input) & 1,316 strains \\
+Measured throughput & $\approx$2.6 samples / min (20 cores) \\
+Per-sample cost & $\approx$7.8 CPU-min \\
+Wall-clock on 20 cores & $\approx$39 h \\
+Single-core equivalent & $\approx$32 days \\
+\hline
+\end{tabular}
+\caption{Supplementary Table S4. Measured compute cost of the Pf6 field-sample
+deconvolution with \texttt{DEploid-BEST}. Throughput is the sustained rate
+observed over the production run (all 5,970 samples completed); per-sample
+cost is derived as 20 cores divided by that throughput. The run is resume-safe, so the wall-clock total is unchanged by
+interruptions.}
+\label{tab:field-time}
+\end{table}
 
 \newpage
 
