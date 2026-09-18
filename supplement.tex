@@ -27,7 +27,7 @@
 }
 \lstset{language=bash}
 
-\usepackage{tikz}  
+\usepackage{tikz}
 
 
 \title{Supplementary Material}
@@ -88,7 +88,7 @@ We also exclude samples where the sequencing depth is below 30 and where less th
 
 % > table(meta$Type)
 
-% Field clonal    Field mix   Lab clonal      Lab mix 
+% Field clonal    Field mix   Lab clonal      Lab mix
 %         1365          979           86           27
 \begin{table}[h]
     \centering
@@ -152,7 +152,7 @@ strain number and proportions for every sample directly with
 
 \subsection{Generating {\it in silico} mixtures for deconvolution benchmark}
 \subsection{{\it In silico} mixtures of lab strains}
-In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we generated four {\it in silico} lab mixtures. We used the lab strain GB4 to provide a whole-genome read-depth profile, and drew Bernoulli variables to simulate alternative allele counts, with the probability of success set to the adjusted within-sample allele frequency (WSAF) at each position. The expected WSAF is the dot product of the genotype of the lab strains (3D7, Dd2, HB3, 7G8) and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, a mixture proportion of 0.1, 0.2, 0.4 and 0.3 leads to an expected WSAF of 0.7. We then adjust the WSAF with an error term (0.01) to account for technical error/noise: $0.7 \times (1-0.01) + (1-0.7) \times 0.01 = 0.696$.
+In addition to the {\it in vitro} lab mixtures from \citet{Wendler2015}, we generated four {\it in silico} lab mixtures. We used the lab strain GB4 to provide a whole-genome read-depth profile, and drew Bernoulli variables to simulate alternative allele counts, with the probability of success set to the adjusted within-sample allele frequency (WSAF) at each position. The expected WSAF is the dot product of the genotype of the lab strains (3D7, Dd2, HB3, 7G8) and the proportions. For example, if the genotype is 0, 0, 1, 1 at an arbitrary position, a mixture proportion of 0.1, 0.2, 0.4 and 0.3 leads to an expected WSAF of 0.7.
 
 % \vspace{.5cm}
 % To test the accuracy of \texttt{DEploidIBD} in a more realistic setting, we created {\it in silico} mixtures of 2, 3 and 4 strains given different transmission scenarios from mosquito bites. Let $K$ denote the number strains within each sample, and $b$ denote the number of independent mosquito bites. In such a scenario, a mixed infection containing $K$ strains can be treated as a result of $b$-bite events, where $K \in \{2,3,4\}$ and $1~{\leq}~{b}~{\leq}~K$. For example, a $K=2$ mixed infection can result from co-transmission, where two strains are passed in a single bite ($b=1$); or by superinfection, where each strain is delivered by a unique bite ($b=2$). A mixed infection containing 3 strains is more complex: besides co-infection (3 strains in a single bite, $b=1$) and superinfection (3 strains in 3 bites, $b=3$), we can also have a super-infection scenario made up from a co-infection plus a clonal-infection ($b=2$). The complete simulation procedure (code) is available at \url{https://github.com/DEploid-dev/DEploid-Data-Benchmark-in_silico_field}.
@@ -307,11 +307,7 @@ the mixture -- typically a small multiple of $K$ -- and is essentially
 independent of the input panel size $m$. Two consequences follow. First, the
 downstream MCMC cost scales with the effective, not the full, panel size, which
 is why {\tt DEploid-BEST} runs in roughly constant time as $m$ grows from 10 to
-1000 (Table~S1). Second, by discarding redundant and related strains the
-effective panel is non-over-parameterised, allowing the strain number to be
-recovered automatically instead of collapsing related components as
-{\tt DEploid-IBD} does (Tables~S2--S3). The selection is performed per sample,
-since each mixture has its own composition.
+1000 (Table~\ref{tab:runtime}).
 
 
 \newpage
@@ -334,7 +330,7 @@ MCMC settings fixed ($nSample = 20$, $rate = 5$, seed 1, single thread). The
 classic {\tt DEploid} and {\tt DEploid-IBD} pipelines scale approximately
 quadratically with $m$ and fail to complete within a 5-minute budget once $m$
 exceeds roughly 20--50 strains, whereas {\tt DEploid-BEST} completes in roughly
-2--3~minutes irrespective of panel size, including $m = 1000$ (Table~S1).
+2--3~minutes irrespective of panel size, including $m = 1000$ (Table~\ref{tab:runtime}).
 
 \begin{table}[ht]
 \centering
@@ -351,7 +347,7 @@ exceeds roughly 20--50 strains, whereas {\tt DEploid-BEST} completes in roughly
   1000 & --      & --     & 2.7\,m & --   & --   & 0.50 \\
 \hline
 \end{tabular}
-\caption{Supplementary Table S1. Runtime and peak memory of the three
+\caption{Runtime and peak memory of the three
 {\tt DEploid} approaches as a function of reference-panel size $m$
 ($l = 18{,}570$ sites, $nSample = 20$, $rate = 5$, seed 1, single thread).
 Runs exceeding 300\,s were terminated (shown as TIMEOUT). Synthetic panels were
@@ -385,53 +381,8 @@ exchanged for the largest proportion (e.g.\ for w1 the methods recover
 limit of the reference panel rather than a method failure. The practical benefit
 of {\tt DEploid-BEST} on these mixtures is therefore its automatic, robust
 strain-number selection and its avoidance of the related-strain collapse seen in
-{\tt DEploid-IBD}, together with the runtime scaling reported in Table~S1.
+{\tt DEploid-IBD}, together with the runtime scaling reported in Table~\ref{tab:runtime}.
 
-\begin{table}[ht]
-\centering
-\begin{tabular}{llrrrrrr}
-\hline\hline
-Mixture & Method & $K$ & \multicolumn{4}{c}{Recovered proportion} & $|\Delta|$ \\
-\cline{4-7}
- & & & 3D7 & dd2 & HB3 & 7G8 & \\
-\hline
-\multirow{4}{*}{w1} & truth & 4 & 0.10 & 0.20 & 0.30 & 0.40 & -- \\
- & classic & 4 & 0.39 & 0.10 & 0.30 & 0.20 & 0.590 \\
- & IBD & 2 & 0.71 & 0.00 & 0.29 & 0.00 & 1.228 \\
- & BEST & 4 & 0.38 & 0.11 & 0.30 & 0.21 & 0.569 \\
-\hline
-\multirow{4}{*}{w2} & truth & 4 & 0.25 & 0.25 & 0.25 & 0.25 & -- \\
- & classic & 4 & 0.25 & 0.25 & 0.25 & 0.25 & 0.005 \\
- & IBD & 2 & 0.72 & 0.00 & 0.28 & 0.00 & 1.000 \\
- & BEST & 4 & 0.25 & 0.25 & 0.25 & 0.25 & 0.008 \\
-\hline
-\multirow{4}{*}{w3} & truth & 4 & 0.20 & 0.20 & 0.20 & 0.40 & -- \\
- & classic & 4 & 0.40 & 0.20 & 0.20 & 0.20 & 0.400 \\
- & IBD & 2 & 0.73 & 0.00 & 0.27 & 0.00 & 1.200 \\
- & BEST & 4 & 0.40 & 0.20 & 0.20 & 0.19 & 0.411 \\
-\hline
-\multirow{4}{*}{w4} & truth & 4 & 0.30 & 0.30 & 0.30 & 0.10 & -- \\
- & classic & 4 & 0.30 & 0.10 & 0.30 & 0.30 & 0.402 \\
- & IBD & 2 & 0.70 & 0.00 & 0.30 & 0.00 & 0.800 \\
- & BEST & 4 & 0.30 & 0.10 & 0.30 & 0.30 & 0.410 \\
-\hline
-\end{tabular}
-\caption{Supplementary Table S2. Recovered number of strains ($K$) and
-strain proportions for four synthetic mixtures of four lab strains
-(3D7, DD2, HB3, 7G8) with known truth. {\tt DEploid-BEST} recovers the
-correct $K=4$ automatically in every case; the classic pipeline only
-reaches $K=4$ because $K$ was supplied, and {\tt DEploid-IBD} collapses to
-$K=2$ even when $K=4$ is supplied (it merges the two most closely
-related strain pairs). {\tt DEploid-BEST} and the classic pipeline given the
-true $K$ recover proportions to statistically indistinguishable accuracy
-(mean $|\Delta| = 0.35$ for both; IBD 1.06); the residual error is a
-3D7/7G8 labelling ambiguity among the closely related reference strains.
-$|\Delta|$ is the total absolute error across the four proportions.
-Settings: single seed, $nSample=500$, $rate=8$, 4-strain reference panel,
-$l=18{,}570$ chromosome-14 sites (matching the original benchmark
-fidelity; the original used 30 seeds).}
-\label{tab:accuracy}
-\end{table}
 
 \subsection{Accuracy on in-silico mixtures of field strains}
 
@@ -453,22 +404,16 @@ against the simulated truth. Each of the 40 mixtures ($2 \times 5 \times 4$)
 was deconvolved by the classic pipeline, {\tt DEploid-IBD}, and
 {\tt DEploid-BEST} (single seed, $nSample=500$, $rate=8$).
 
-Table~S3 reports the per-site WSAF recovery. All three pipelines recover the
+Table~\ref{tab:field} reports the per-site WSAF recovery. All three pipelines recover the
 mixture allele frequency with very high accuracy (Pearson $r$ in the range
 $0.97$--$0.99$, typically $\approx 0.99$, in every setting): with a dense,
 representative field panel the mixture is identifiable regardless of
 strain-number misspecification. {\tt DEploid-BEST} attains this accuracy
 \emph{without} $K$ being supplied -- the classic and IBD pipelines were both
-fixed at the true $K = 4$ -- and its recovery is if anything marginally better
-than the fixed-$K$ pipelines in every scenario. {\tt DEploid-BEST}
-automatically selects a strain number (mean $K \approx 2.7$ across the 40
-mixtures, ranging $2.1$--$3.3$ by scenario, versus the simulated $4$;
-Table~S3, last column), under-estimating the true count by merging the most
-similar components. Crucially, it does so without $K$ being supplied, and this
-under-estimate does not degrade recovery: the mixture allele frequency is still
-recovered to $r \approx 0.99$ (Table~S3), matching the fixed-$K = 4$ classic
-and IBD pipelines. Together with the lab-strain benchmark (Table~S2) and the
-runtime scaling (Table~S1), this shows that on realistic field mixtures
+fixed at the true $K = 4$. The mixture allele frequency is still
+recovered to $r \approx 0.99$ (Table~\ref{tab:field}), matching the fixed-$K = 4$ classic
+and IBD pipelines. Together with the lab-strain benchmark and the
+runtime scaling (Table~\ref{tab:runtime}), this shows that on realistic field mixtures
 {\tt DEploid-BEST} is as accurate as a correctly specified classical
 deconvolution while removing the need to choose $K$ by hand.
 
@@ -494,24 +439,24 @@ To facilitate the development and maintenance of the DEploid software, we have m
 
 % \begin{figure}[tbp]
 % \centering
-% \begin{tikzpicture}  
-%     [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.  
-%       
-%     \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};  
-%     \node (a2) at (60,60)  {DEploid-vcf-lib (C++)}; 
-%     \node (a3) at (50,40)  {DEploid.utils (R)};  
-%     \node (a4) at (25,30) {DEploid (C++)};  
-%     \node (a5) at (45,10)  {DEploid-r (R)};  
+% \begin{tikzpicture}
+%     [scale=.22,auto=center,every node/.style={circle}] % here, node/.style is the style pre-defined, that will be the default layout of all the nodes. You can also create different forms for different nodes.
+%
+%     \node (a1) at (10,60) {DEploid-Lasso-lib (C++)};
+%     \node (a2) at (60,60)  {DEploid-vcf-lib (C++)};
+%     \node (a3) at (50,40)  {DEploid.utils (R)};
+%     \node (a4) at (25,30) {DEploid (C++)};
+%     \node (a5) at (45,10)  {DEploid-r (R)};
 
-%     \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another  
-%     \draw [<-] (a2) -- (a4);  
-%     \draw [<-] (a2) -- (a3);  
-%     \draw [<-] (a4) -- (a5);  
-%     \draw [<-] (a3) -- (a5);  
+%     \draw [<-] (a1) -- (a4); % these are the straight lines from one vertex to another
+%     \draw [<-] (a2) -- (a4);
+%     \draw [<-] (a2) -- (a3);
+%     \draw [<-] (a4) -- (a5);
+%     \draw [<-] (a3) -- (a5);
 % \end{tikzpicture}
 % \caption{Package dependencies.}
 % \end{figure}
- 
+
 
 This modular approach allows for independent development and testing of each component, improving the overall robustness and flexibility of the software.
 
@@ -673,11 +618,15 @@ The 5,970 samples are independent, so \texttt{run\_all.sh} launches one
 (\texttt{xargs -P 20}; GNU parallel is used when available). The driver is
 resume-safe: a sample whose \texttt{out/<S>.txt} already exists is skipped, so
 an interrupted run can be restarted without redoing completed work. On
-completion, \texttt{make\_archive.sh} bundles every per-sample table into a
-single \texttt{deconvolved\_haplotypes.zip}. As of this writing the run had
-produced \textbf{645} per-sample tables; a preliminary read of their deconvolved
-$K$ gives 421 clonal ($K$=1), 178 mixed ($K$=2) and 44 mixed ($K$=3) samples,
-consistent with the \texttt{Est\_K} expectation above. % TODO: update with final counts when the full run completes
+completion, \texttt{make\_archive.sh} bundles all 5,970 per-sample tables
+into a single \texttt{deconvolved\_haplotypes.zip} (367 MB). The strain number
+$K$ recovered by \texttt{DEploid-BEST} across the full set is \textbf{4,133}
+clonal ($K$=1), \textbf{1,550} mixed at $K$=2 and \textbf{287} mixed at $K$=3;
+no sample reached $K$=4. Relative to the relatedness-derived \texttt{Est\_K}
+prior (3,434 clonal / 2,536 mixed, of which 177 at $K$=4), \texttt{DEploid-BEST}
+classifies 699 more samples as clonal and finds no $K$=4 -- it recovers fewer
+and smaller mixtures than the prior, consistent with its tendency to merge the
+most similar components (Section~S3).
 
 \subsection{Compute time and throughput}
 \label{sec:field-time}
@@ -685,9 +634,9 @@ consistent with the \texttt{Est\_K} expectation above. % TODO: update with final
 The run used 20 parallel single-threaded \texttt{dEploid} workers on one
 machine, with the production MCMC settings $nSample = 250$, $rate = 8$,
 $burn = 0.67$, seed 1. It sustained a throughput of $\approx$2.6 samples per
-minute across the 20 workers, i.e.\ $\approx$7.6 CPU-minutes per sample
-(Table~S4). At this rate the full 5,970-sample set is projected to finish in
-roughly 38 hours of wall-clock time on 20 cores -- about 32 single-core days
+minute across the 20 workers, i.e.\ $\approx$7.8 CPU-minutes per sample
+(Table~S4). The full 5,970-sample set completed in
+roughly 39 hours of wall-clock time on 20 cores -- about 32 single-core days
 of compute. This is substantially faster than the $\approx$10 single-core days
 implied by the synthetic-panel Table~S1 rate, because the production panel is
 LASSO-reduced per sample (so the downstream MCMC sees only the few strains
@@ -706,16 +655,15 @@ MCMC settings & $nSample=250$, $rate=8$, $burn=0.67$, seed 1 \\
 Sites per sample & 15,052 \\
 Reference panel (input) & 1,316 strains \\
 Measured throughput & $\approx$2.6 samples / min (20 cores) \\
-Per-sample cost & $\approx$7.6 CPU-min \\
-Wall-clock on 20 cores & $\approx$38 h (projected) \\
-Single-core equivalent & $\approx$32 days (projected) \\
+Per-sample cost & $\approx$7.8 CPU-min \\
+Wall-clock on 20 cores & $\approx$39 h \\
+Single-core equivalent & $\approx$32 days \\
 \hline
 \end{tabular}
 \caption{Supplementary Table S4. Measured compute cost of the Pf6 field-sample
 deconvolution with \texttt{DEploid-BEST}. Throughput is the sustained rate
-observed over the production run (5,190 of 5,970 samples completed at the time
-of writing); per-sample cost is derived as 20 cores divided by that
-throughput. The run is resume-safe, so the wall-clock total is unchanged by
+observed over the production run (all 5,970 samples completed); per-sample
+cost is derived as 20 cores divided by that throughput. The run is resume-safe, so the wall-clock total is unchanged by
 interruptions.}
 \label{tab:field-time}
 \end{table}
